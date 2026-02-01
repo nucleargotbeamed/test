@@ -1,21 +1,11 @@
---[[
-    GameSense UI Library for Roblox
-    Converted from web gamesense UI
-    
-    Load via:
-    loadstring(game:HttpService():GetAsync("https://raw.githubusercontent.com/YourUsername/YourRepo/main/GameSenseUI.lua"))()
-]]
-
 local GameSenseUI = {}
 GameSenseUI.__index = GameSenseUI
 
--- Services
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
--- Theme Colors (matching gamesense style)
 local Theme = {
     Background = Color3.fromRGB(17, 17, 17),
     TabBackground = Color3.fromRGB(12, 12, 12),
@@ -33,7 +23,6 @@ local Theme = {
     ElementBorder = Color3.fromRGB(0, 0, 0),
 }
 
--- Utility function to create instances
 local function Create(class, properties)
     local instance = Instance.new(class)
     for prop, value in pairs(properties) do
@@ -47,7 +36,6 @@ local function Create(class, properties)
     return instance
 end
 
--- Utility function to add corner radius
 local function AddCorner(parent, radius)
     return Create("UICorner", {
         CornerRadius = UDim.new(0, radius or 0),
@@ -55,7 +43,6 @@ local function AddCorner(parent, radius)
     })
 end
 
--- Utility function to add stroke
 local function AddStroke(parent, color, thickness)
     return Create("UIStroke", {
         Color = color or Theme.Border,
@@ -64,7 +51,6 @@ local function AddStroke(parent, color, thickness)
     })
 end
 
--- Make frame draggable
 local function MakeDraggable(frame, handle)
     handle = handle or frame
     local dragging, dragInput, dragStart, startPos
@@ -97,33 +83,6 @@ local function MakeDraggable(frame, handle)
     end)
 end
 
--- Ripple effect for buttons
-local function AddRipple(button)
-    button.ClipsDescendants = true
-    
-    button.MouseButton1Click:Connect(function()
-        local ripple = Create("Frame", {
-            Parent = button,
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            BackgroundTransparency = 0.8,
-            AnchorPoint = Vector2.new(0.5, 0.5),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            Size = UDim2.new(0, 0, 0, 0),
-        })
-        AddCorner(ripple, 100)
-        
-        local tween = TweenService:Create(ripple, TweenInfo.new(0.5), {
-            Size = UDim2.new(2, 0, 2, 0),
-            BackgroundTransparency = 1
-        })
-        tween:Play()
-        tween.Completed:Connect(function()
-            ripple:Destroy()
-        end)
-    end)
-end
-
--- Create Window
 function GameSenseUI:CreateWindow(config)
     config = config or {}
     local title = config.Title or "game"
@@ -134,7 +93,6 @@ function GameSenseUI:CreateWindow(config)
     Window.Tabs = {}
     Window.CurrentTab = nil
     
-    -- ScreenGui
     local ScreenGui = Create("ScreenGui", {
         Name = "GameSenseUI",
         Parent = RunService:IsStudio() and Players.LocalPlayer:WaitForChild("PlayerGui") or game:GetService("CoreGui"),
@@ -143,7 +101,6 @@ function GameSenseUI:CreateWindow(config)
         DisplayOrder = 999
     })
     
-    -- Main Frame
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
         Parent = ScreenGui,
@@ -153,7 +110,6 @@ function GameSenseUI:CreateWindow(config)
         ClipsDescendants = true,
     })
     
-    -- Double border effect
     local OuterBorder = Create("Frame", {
         Name = "OuterBorder",
         Parent = MainFrame,
@@ -172,7 +128,6 @@ function GameSenseUI:CreateWindow(config)
     })
     AddStroke(InnerBorder, Theme.Border, 1)
     
-    -- Gradient Line at top
     local GradientLine = Create("Frame", {
         Name = "GradientLine",
         Parent = MainFrame,
@@ -190,7 +145,6 @@ function GameSenseUI:CreateWindow(config)
         }),
     })
     
-    -- Tab Container (left side)
     local TabContainer = Create("Frame", {
         Name = "TabContainer",
         Parent = MainFrame,
@@ -221,7 +175,6 @@ function GameSenseUI:CreateWindow(config)
         SortOrder = Enum.SortOrder.LayoutOrder,
     })
     
-    -- Content Container
     local ContentContainer = Create("Frame", {
         Name = "ContentContainer",
         Parent = MainFrame,
@@ -230,7 +183,6 @@ function GameSenseUI:CreateWindow(config)
         Size = UDim2.new(1, -115, 1, -30),
     })
     
-    -- Make draggable from the gradient line area
     local DragHandle = Create("Frame", {
         Name = "DragHandle",
         Parent = MainFrame,
@@ -239,7 +191,6 @@ function GameSenseUI:CreateWindow(config)
     })
     MakeDraggable(MainFrame, DragHandle)
     
-    -- Toggle visibility
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == toggleKey then
             MainFrame.Visible = not MainFrame.Visible
@@ -251,13 +202,11 @@ function GameSenseUI:CreateWindow(config)
     Window.TabContainer = TabButtonContainer
     Window.ContentContainer = ContentContainer
     
-    -- Create Tab function
     function Window:CreateTab(name)
         local Tab = {}
         Tab.Elements = {}
         local tabIndex = #Window.Tabs + 1
         
-        -- Tab Button
         local TabButton = Create("TextButton", {
             Name = "Tab_" .. name,
             Parent = TabButtonContainer,
@@ -272,7 +221,6 @@ function GameSenseUI:CreateWindow(config)
             AutoButtonColor = false,
         })
         
-        -- Top/Bottom borders for selected tab
         local TopBorder = Create("Frame", {
             Name = "TopBorder",
             Parent = TabButton,
@@ -292,7 +240,6 @@ function GameSenseUI:CreateWindow(config)
             Visible = false,
         })
         
-        -- Tab Content
         local TabContent = Create("ScrollingFrame", {
             Name = "Content_" .. name,
             Parent = ContentContainer,
@@ -317,7 +264,6 @@ function GameSenseUI:CreateWindow(config)
             PaddingRight = UDim.new(0, 10),
         })
         
-        -- Tab click handler
         TabButton.MouseButton1Click:Connect(function()
             for _, tab in pairs(Window.Tabs) do
                 tab.Button.TextColor3 = Theme.TextDark
@@ -349,7 +295,6 @@ function GameSenseUI:CreateWindow(config)
         Tab.Button = TabButton
         Tab.Content = TabContent
         
-        -- Set first tab as active
         if tabIndex == 1 then
             TabButton.TextColor3 = Theme.Text
             TabButton.BackgroundColor3 = Theme.Background
@@ -359,9 +304,6 @@ function GameSenseUI:CreateWindow(config)
             Window.CurrentTab = Tab
         end
         
-        -- ============ ELEMENT FUNCTIONS ============
-        
-        -- Create Section
         function Tab:CreateSection(text)
             local Section = {}
             
@@ -386,7 +328,6 @@ function GameSenseUI:CreateWindow(config)
             return Section
         end
         
-        -- Create Checkbox
         function Tab:CreateCheckbox(config)
             config = config or {}
             local text = config.Text or "Checkbox"
@@ -451,7 +392,6 @@ function GameSenseUI:CreateWindow(config)
             return Checkbox
         end
         
-        -- Create Slider
         function Tab:CreateSlider(config)
             config = config or {}
             local text = config.Text or "Slider"
@@ -520,6 +460,7 @@ function GameSenseUI:CreateWindow(config)
             
             SliderButton.MouseButton1Down:Connect(function()
                 dragging = true
+                updateSlider(UserInputService:GetMouseLocation())
             end)
             
             UserInputService.InputEnded:Connect(function(input)
@@ -532,10 +473,6 @@ function GameSenseUI:CreateWindow(config)
                 if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
                     updateSlider(input.Position)
                 end
-            end)
-            
-            SliderButton.MouseButton1Down:Connect(function()
-                updateSlider(UserInputService:GetMouseLocation())
             end)
             
             function Slider:Set(val)
@@ -553,7 +490,6 @@ function GameSenseUI:CreateWindow(config)
             return Slider
         end
         
-        -- Create Button
         function Tab:CreateButton(config)
             config = config or {}
             local text = config.Text or "Button"
@@ -588,7 +524,6 @@ function GameSenseUI:CreateWindow(config)
             return Button
         end
         
-        -- Create Dropdown
         function Tab:CreateDropdown(config)
             config = config or {}
             local text = config.Text or "Dropdown"
@@ -745,7 +680,6 @@ function GameSenseUI:CreateWindow(config)
             return Dropdown
         end
         
-        -- Create Textbox
         function Tab:CreateTextbox(config)
             config = config or {}
             local text = config.Text or "Textbox"
@@ -803,7 +737,6 @@ function GameSenseUI:CreateWindow(config)
             return Textbox
         end
         
-        -- Create Keybind
         function Tab:CreateKeybind(config)
             config = config or {}
             local text = config.Text or "Keybind"
@@ -875,7 +808,6 @@ function GameSenseUI:CreateWindow(config)
             return Keybind
         end
         
-        -- Create Label
         function Tab:CreateLabel(text)
             local Label = {}
             
@@ -898,7 +830,6 @@ function GameSenseUI:CreateWindow(config)
             return Label
         end
         
-        -- Create Color Picker
         function Tab:CreateColorPicker(config)
             config = config or {}
             local text = config.Text or "Color"
@@ -938,7 +869,6 @@ function GameSenseUI:CreateWindow(config)
             AddStroke(ColorDisplay, Theme.ElementBorder, 1)
             
             ColorDisplay.MouseButton1Click:Connect(function()
-                -- Simple color picker toggle (you can expand this)
                 local colors = {
                     Color3.fromRGB(255, 0, 0),
                     Color3.fromRGB(0, 255, 0),
@@ -973,12 +903,13 @@ function GameSenseUI:CreateWindow(config)
         return Tab
     end
     
-    -- Create Watermark
     function Window:CreateWatermark(config)
         config = config or {}
         local text = config.Text or "gamesense"
         
-        local Watermark = Create("Frame", {
+        local WatermarkData = {}
+        
+        local WatermarkFrame = Create("Frame", {
             Name = "Watermark",
             Parent = ScreenGui,
             BackgroundColor3 = Theme.Background,
@@ -986,9 +917,8 @@ function GameSenseUI:CreateWindow(config)
             Size = UDim2.new(0, 180, 0, 28),
         })
         
-        -- Double border
         local WMOuterBorder = Create("Frame", {
-            Parent = Watermark,
+            Parent = WatermarkFrame,
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 4, 1, 4),
             Position = UDim2.new(0, -2, 0, -2),
@@ -996,15 +926,16 @@ function GameSenseUI:CreateWindow(config)
         AddStroke(WMOuterBorder, Theme.Border, 2)
         
         local WMInnerBorder = Create("Frame", {
-            Parent = Watermark,
+            Parent = WatermarkFrame,
             BackgroundTransparency = 1,
             Size = UDim2.new(1, -4, 1, -4),
             Position = UDim2.new(0, 2, 0, 2),
         })
         AddStroke(WMInnerBorder, Theme.Border, 1)
         
-        Create("TextLabel", {
-            Parent = Watermark,
+        local WatermarkLabel = Create("TextLabel", {
+            Name = "WatermarkLabel",
+            Parent = WatermarkFrame,
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
             Font = Enum.Font.SourceSans,
@@ -1014,39 +945,48 @@ function GameSenseUI:CreateWindow(config)
             TextSize = 14,
         })
         
-        function Watermark:SetText(newText)
-            Watermark:FindFirstChild("TextLabel").Text = 'game<font color="#90bb20">sense</font> | ' .. newText
+        WatermarkData.Frame = WatermarkFrame
+        WatermarkData.Label = WatermarkLabel
+        
+        function WatermarkData:SetText(newText)
+            WatermarkLabel.Text = 'game<font color="#90bb20">sense</font> | ' .. newText
         end
         
-        function Watermark:Toggle(visible)
-            Watermark.Visible = visible
+        function WatermarkData:Toggle(visible)
+            WatermarkFrame.Visible = visible
         end
         
-        return Watermark
+        function WatermarkData:Destroy()
+            WatermarkFrame:Destroy()
+        end
+        
+        return WatermarkData
     end
     
-    -- Notification System
     function Window:Notify(config)
         config = config or {}
         local title = config.Title or "Notification"
         local message = config.Message or ""
         local duration = config.Duration or 3
         
-        local NotificationHolder = ScreenGui:FindFirstChild("NotificationHolder") or Create("Frame", {
-            Name = "NotificationHolder",
-            Parent = ScreenGui,
-            BackgroundTransparency = 1,
-            Position = UDim2.new(1, -320, 1, -20),
-            Size = UDim2.new(0, 300, 0, 0),
-            AnchorPoint = Vector2.new(0, 1),
-        })
-        
-        Create("UIListLayout", {
-            Parent = NotificationHolder,
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            Padding = UDim.new(0, 5),
-            VerticalAlignment = Enum.VerticalAlignment.Bottom,
-        })
+        local NotificationHolder = ScreenGui:FindFirstChild("NotificationHolder")
+        if not NotificationHolder then
+            NotificationHolder = Create("Frame", {
+                Name = "NotificationHolder",
+                Parent = ScreenGui,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(1, -320, 1, -20),
+                Size = UDim2.new(0, 300, 0, 0),
+                AnchorPoint = Vector2.new(0, 1),
+            })
+            
+            Create("UIListLayout", {
+                Parent = NotificationHolder,
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0, 5),
+                VerticalAlignment = Enum.VerticalAlignment.Bottom,
+            })
+        end
         
         local Notification = Create("Frame", {
             Parent = NotificationHolder,
@@ -1056,7 +996,6 @@ function GameSenseUI:CreateWindow(config)
         })
         AddStroke(Notification, Theme.Border, 1)
         
-        -- Top gradient line
         local NotifLine = Create("Frame", {
             Parent = Notification,
             BackgroundColor3 = Color3.new(1, 1, 1),
@@ -1097,13 +1036,11 @@ function GameSenseUI:CreateWindow(config)
             TextWrapped = true,
         })
         
-        -- Animate in
         Notification.Position = UDim2.new(1, 0, 0, 0)
         TweenService:Create(Notification, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
             Position = UDim2.new(0, 0, 0, 0)
         }):Play()
         
-        -- Auto remove
         task.delay(duration, function()
             TweenService:Create(Notification, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
                 Position = UDim2.new(1, 0, 0, 0)
@@ -1113,12 +1050,10 @@ function GameSenseUI:CreateWindow(config)
         end)
     end
     
-    -- Destroy Window
     function Window:Destroy()
         ScreenGui:Destroy()
     end
     
-    -- Toggle Window
     function Window:Toggle(visible)
         MainFrame.Visible = visible
     end
