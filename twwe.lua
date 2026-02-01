@@ -126,7 +126,7 @@ end
 
 FPSCounter:Start()
 
-local TAB_SIZE = 65
+local TAB_SIZE = 100
 
 function GameSenseUI:CreateWindow(windowConfig)
     windowConfig = windowConfig or {}
@@ -491,7 +491,7 @@ function GameSenseUI:CreateWindow(windowConfig)
 
             Create("UIPadding", {
                 Parent = ColumnContent,
-                PaddingTop = UDim.new(0, 8),
+                PaddingTop = UDim.new(0, 10),
                 PaddingLeft = UDim.new(0, 8),
                 PaddingRight = UDim.new(0, 8),
                 PaddingBottom = UDim.new(0, 8)
