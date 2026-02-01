@@ -6,7 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local Theme = {
+local Theme =
     Background = Color3.fromRGB(17, 17, 17),
     TabBackground = Color3.fromRGB(12, 12, 12),
     Border = Color3.fromRGB(61, 65, 76),
@@ -58,7 +58,7 @@ local function MakeDraggable(frame, handle)
             startPos = frame.Position
 
             Inpu inpufunc()
-                if Inpu inpu t
+                if Inpu input
                     dragging = false
                 end
             end)
