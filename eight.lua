@@ -78,6 +78,45 @@ local function MakeDraggable(frame, handle)
     end)
 end
 
+local FPSCounter = {}
+FPSCounter.fps = 0
+FPSCounter.frameCount = 0
+FPSCounter.lastTime = tick()
+FPSCounter.connections = {}
+
+function FPSCounter:Start()
+    if self.running then return end
+    self.running = true
+    
+    self.connections.heartbeat = RunService.Heartbeat:Connect(function()
+        self.frameCount = self.frameCount + 1
+        local currentTime = tick()
+        local elapsed = currentTime - self.lastTime
+        
+        if elapsed >= 1 then
+            self.fps = math.floor(self.frameCount / elapsed)
+            self.frameCount = 0
+            self.lastTime = currentTime
+        end
+    end)
+end
+
+function FPSCounter:Stop()
+    self.running = false
+    for _, connection in pairs(self.connections) do
+        if connection then
+            connection:Disconnect()
+        end
+    end
+    self.connections = {}
+end
+
+function FPSCounter:Get()
+    return self.fps
+end
+
+FPSCounter:Start()
+
 function GameSenseUI:CreateWindow(config)
     config = config or {}
     local title = config.Title or "game"
@@ -196,6 +235,10 @@ function GameSenseUI:CreateWindow(config)
     Window.MainFrame = MainFrame
     Window.TabContainer = TabButtonContainer
     Window.ContentContainer = ContentContainer
+    
+    function Window:GetFPS()
+        return FPSCounter:Get()
+    end
     
     function Window:CreateTab(config)
         config = config or {}
@@ -1110,15 +1153,23 @@ function GameSenseUI:CreateWindow(config)
     function Window:CreateWatermark(config)
         config = config or {}
         local text = config.Text or "gamesense"
+        local showFPS = config.ShowFPS or false
+        local showPing = config.ShowPing or false
+        local showTime = config.ShowTime or false
         
         local WatermarkData = {}
+        WatermarkData.showFPS = showFPS
+        WatermarkData.showPing = showPing
+        WatermarkData.showTime = showTime
+        WatermarkData.customText = text
+        WatermarkData.running = true
         
         local WatermarkFrame = Create("Frame", {
             Name = "Watermark",
             Parent = ScreenGui,
             BackgroundColor3 = Theme.Background,
-            Position = UDim2.new(1, -200, 0, 15),
-            Size = UDim2.new(0, 180, 0, 28),
+            Position = UDim2.new(1, -250, 0, 15),
+            Size = UDim2.new(0, 230, 0, 28),
         })
         
         local WMOuterBorder = Create("Frame", {
@@ -1152,8 +1203,63 @@ function GameSenseUI:CreateWindow(config)
         WatermarkData.Frame = WatermarkFrame
         WatermarkData.Label = WatermarkLabel
         
+        local function updateWatermark()
+            local parts = {'game<font color="#90bb20">sense</font>'}
+            
+            if WatermarkData.customText and WatermarkData.customText ~= "" then
+                table.insert(parts, WatermarkData.customText)
+            end
+            
+            if WatermarkData.showFPS then
+                table.insert(parts, "fps: " .. tostring(FPSCounter:Get()))
+            end
+            
+            if WatermarkData.showPing then
+                local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+                table.insert(parts, "ping: " .. tostring(math.floor(ping)) .. "ms")
+            end
+            
+            if WatermarkData.showTime then
+                table.insert(parts, os.date("%H:%M:%S"))
+            end
+            
+            WatermarkLabel.Text = table.concat(parts, " | ")
+            
+            local textSize = game:GetService("TextService"):GetTextSize(
+                WatermarkLabel.Text:gsub("<.->", ""),
+                14,
+                Enum.Font.SourceSans,
+                Vector2.new(1000, 28)
+            )
+            WatermarkFrame.Size = UDim2.new(0, textSize.X + 20, 0, 28)
+            WatermarkFrame.Position = UDim2.new(1, -(textSize.X + 35), 0, 15)
+        end
+        
+        task.spawn(function()
+            while WatermarkData.running do
+                if WatermarkFrame and WatermarkFrame.Parent then
+                    updateWatermark()
+                else
+                    break
+                end
+                task.wait(0.1)
+            end
+        end)
+        
         function WatermarkData:SetText(newText)
-            WatermarkLabel.Text = 'game<font color="#90bb20">sense</font> | ' .. newText
+            WatermarkData.customText = newText
+        end
+        
+        function WatermarkData:SetFPS(enabled)
+            WatermarkData.showFPS = enabled
+        end
+        
+        function WatermarkData:SetPing(enabled)
+            WatermarkData.showPing = enabled
+        end
+        
+        function WatermarkData:SetTime(enabled)
+            WatermarkData.showTime = enabled
         end
         
         function WatermarkData:Toggle(visible)
@@ -1161,6 +1267,7 @@ function GameSenseUI:CreateWindow(config)
         end
         
         function WatermarkData:Destroy()
+            WatermarkData.running = false
             WatermarkFrame:Destroy()
         end
         
@@ -1255,6 +1362,7 @@ function GameSenseUI:CreateWindow(config)
     end
     
     function Window:Destroy()
+        FPSCounter:Stop()
         ScreenGui:Destroy()
     end
     
