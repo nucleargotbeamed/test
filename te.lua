@@ -5,7 +5,6 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Stats = game:GetService("Stats")
 
 local Theme = {
     Background = Color3.fromRGB(17, 17, 17),
@@ -88,6 +87,9 @@ function GameSenseUI:CreateWindow(config)
     Window.CurrentTab = nil
     Window.ToggleKey = toggleKey
 
+    -- Tab size (perfect square)
+    local TAB_SIZE = 90
+
     local ScreenGui = Create("ScreenGui", {
         Name = "GameSenseUI",
         Parent = RunService:IsStudio() and Players.LocalPlayer:WaitForChild("PlayerGui") or game:GetService("CoreGui"),
@@ -96,7 +98,6 @@ function GameSenseUI:CreateWindow(config)
         DisplayOrder = 999
     })
 
-    -- Main Frame with double border effect
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
         Parent = ScreenGui,
@@ -116,7 +117,6 @@ function GameSenseUI:CreateWindow(config)
     })
     AddStroke(OuterBorder, Theme.Border, 1)
 
-    -- Inner border
     local InnerBorder = Create("Frame", {
         Name = "InnerBorder",
         Parent = MainFrame,
@@ -151,7 +151,7 @@ function GameSenseUI:CreateWindow(config)
         Parent = MainFrame,
         BackgroundColor3 = Theme.TabBackground,
         Position = UDim2.new(0, 0, 0, 2),
-        Size = UDim2.new(0, 90, 1, -2),
+        Size = UDim2.new(0, TAB_SIZE, 1, -2),
         BorderSizePixel = 0,
     })
 
@@ -170,11 +170,13 @@ function GameSenseUI:CreateWindow(config)
         Parent = TabContainer,
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
+        ClipsDescendants = true,
     })
 
     Create("UIListLayout", {
         Parent = TabButtonContainer,
         SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 0),
     })
 
     -- Content container (right side)
@@ -182,8 +184,8 @@ function GameSenseUI:CreateWindow(config)
         Name = "ContentContainer",
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 100, 0, 12),
-        Size = UDim2.new(1, -110, 1, -22),
+        Position = UDim2.new(0, TAB_SIZE + 10, 0, 12),
+        Size = UDim2.new(1, -(TAB_SIZE + 20), 1, -22),
     })
 
     -- Drag handle
@@ -216,17 +218,17 @@ function GameSenseUI:CreateWindow(config)
         Tab.Elements = {}
         local tabIndex = #Window.Tabs + 1
 
-        -- Tab button (single letter style like original)
+        -- Perfect square tab button
         local TabButton = Create("TextButton", {
             Name = "Tab_" .. name,
             Parent = TabButtonContainer,
             BackgroundColor3 = Theme.TabBackground,
-            Size = UDim2.new(1, 0, 0, 55),
+            Size = UDim2.new(1, 0, 0, TAB_SIZE),
             BorderSizePixel = 0,
-            Font = Enum.Font.GothamBold,
-            Text = string.sub(name, 1, 1):upper(), -- First letter only
+            Font = Enum.Font.GothamBlack,
+            Text = string.sub(name, 1, 1):upper(),
             TextColor3 = Theme.TextDark,
-            TextSize = 32,
+            TextSize = 48,
             LayoutOrder = tabIndex,
             AutoButtonColor = false,
         })
@@ -251,6 +253,17 @@ function GameSenseUI:CreateWindow(config)
             Size = UDim2.new(1, 0, 0, 1),
             BorderSizePixel = 0,
             Visible = false,
+        })
+
+        -- Right border (visible when not active)
+        local RightBorder = Create("Frame", {
+            Name = "RightBorderTab",
+            Parent = TabButton,
+            BackgroundColor3 = Theme.TabBorder,
+            Position = UDim2.new(1, -1, 0, 0),
+            Size = UDim2.new(0, 1, 1, 0),
+            BorderSizePixel = 0,
+            Visible = true,
         })
 
         -- Tab content
@@ -285,12 +298,14 @@ function GameSenseUI:CreateWindow(config)
                 tab.Button.BackgroundColor3 = Theme.TabBackground
                 tab.Button.TopBorder.Visible = false
                 tab.Button.BottomBorder.Visible = false
+                tab.Button.RightBorderTab.Visible = true
                 tab.Content.Visible = false
             end
             TabButton.TextColor3 = Theme.Text
             TabButton.BackgroundColor3 = Theme.Background
             TopBorder.Visible = true
             BottomBorder.Visible = true
+            RightBorder.Visible = false
             TabContent.Visible = true
             Window.CurrentTab = Tab
         end)
@@ -316,6 +331,7 @@ function GameSenseUI:CreateWindow(config)
             TabButton.BackgroundColor3 = Theme.Background
             TopBorder.Visible = true
             BottomBorder.Visible = true
+            RightBorder.Visible = false
             TabContent.Visible = true
             Window.CurrentTab = Tab
         end
@@ -349,7 +365,7 @@ function GameSenseUI:CreateWindow(config)
             return Section
         end
 
-        -- Checkbox (matches original 9x9 style)
+        -- Checkbox
         function Tab:CreateCheckbox(config)
             config = config or {}
             local text = config.Text or "Checkbox"
@@ -366,7 +382,6 @@ function GameSenseUI:CreateWindow(config)
                 Size = UDim2.new(1, 0, 0, 16),
             })
 
-            -- 9x9 indicator box
             local CheckboxIndicator = Create("Frame", {
                 Name = "Indicator",
                 Parent = CheckboxFrame,
@@ -863,7 +878,7 @@ function GameSenseUI:CreateWindow(config)
             return Label
         end
 
-        -- ColorPicker (simple cycle version like original)
+        -- ColorPicker
         function Tab:CreateColorPicker(config)
             config = config or {}
             local text = config.Text or "Color"
@@ -939,7 +954,7 @@ function GameSenseUI:CreateWindow(config)
         return Tab
     end
 
-    -- Watermark (matches original style)
+    -- Watermark
     function Window:CreateWatermark(config)
         config = config or {}
         local text = config.Text or ""
@@ -954,7 +969,6 @@ function GameSenseUI:CreateWindow(config)
             Size = UDim2.new(0, 180, 0, 24),
         })
 
-        -- Double border effect
         local WMOuterBorder = Create("Frame", {
             Parent = WatermarkFrame,
             BackgroundTransparency = 1,
@@ -1000,7 +1014,7 @@ function GameSenseUI:CreateWindow(config)
         return WatermarkData
     end
 
-    -- Notifications
+    -- Notify
     function Window:Notify(config)
         config = config or {}
         local title = config.Title or "Notification"
