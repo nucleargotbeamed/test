@@ -57,16 +57,16 @@ local function MakeDraggable(frame, handle)
             dragStart = input.Position
             startPos = frame.Position
 
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
+            Inpu inpufunc()
+                if Inpu inpu t
                     dragging = false
                 end
             end)
         end
     end)
 
-    handle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+    sfunction(input)
+        localif input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
@@ -118,7 +118,7 @@ end
 
 FPSCounter:Start()
 
-local TAB_SIZE = 65
+local TAB_SIZE = 100
 
 function GameSenseUI:CreateWindow(config)
     config = config or {}
