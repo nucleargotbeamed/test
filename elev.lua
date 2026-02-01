@@ -23,6 +23,7 @@ local Theme = {
     ElementBorder = Color3.fromRGB(0, 0, 0),
     ColumnBackground = Color3.fromRGB(14, 14, 14),
     ColumnHeader = Color3.fromRGB(20, 20, 20),
+    Font = Enum.Font.Code,
 }
 
 local function Create(class, properties)
@@ -117,6 +118,8 @@ end
 
 FPSCounter:Start()
 
+local TAB_SIZE = 65
+
 function GameSenseUI:CreateWindow(config)
     config = config or {}
     local title = config.Title or "game"
@@ -185,7 +188,7 @@ function GameSenseUI:CreateWindow(config)
         Parent = MainFrame,
         BackgroundColor3 = Theme.TabBackground,
         Position = UDim2.new(0, 0, 0, 2),
-        Size = UDim2.new(0, 90, 1, -2),
+        Size = UDim2.new(0, TAB_SIZE, 1, -2),
         BorderSizePixel = 0,
     })
     
@@ -214,8 +217,8 @@ function GameSenseUI:CreateWindow(config)
         Name = "ContentContainer",
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 100, 0, 10),
-        Size = UDim2.new(1, -110, 1, -20),
+        Position = UDim2.new(0, TAB_SIZE + 10, 0, 10),
+        Size = UDim2.new(1, -(TAB_SIZE + 20), 1, -20),
     })
     
     local DragHandle = Create("Frame", {
@@ -263,7 +266,7 @@ function GameSenseUI:CreateWindow(config)
             Name = "Tab_" .. name,
             Parent = TabButtonContainer,
             BackgroundColor3 = Theme.TabBackground,
-            Size = UDim2.new(1, 0, 0, 60),
+            Size = UDim2.new(0, TAB_SIZE, 0, TAB_SIZE),
             BorderSizePixel = 0,
             Text = "",
             LayoutOrder = tabIndex,
@@ -276,7 +279,7 @@ function GameSenseUI:CreateWindow(config)
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0.5, 0, 0.5, 0),
                 AnchorPoint = Vector2.new(0.5, 0.5),
-                Size = UDim2.new(0, 32, 0, 32),
+                Size = UDim2.new(0, 28, 0, 28),
                 Image = icon,
                 ImageColor3 = Theme.TextDark,
                 Name = "Icon",
@@ -286,10 +289,10 @@ function GameSenseUI:CreateWindow(config)
                 Parent = TabButton,
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 1, 0),
-                Font = Enum.Font.GothamBold,
+                Font = Theme.Font,
                 Text = string.sub(name, 1, 1),
                 TextColor3 = Theme.TextDark,
-                TextSize = 32,
+                TextSize = 28,
                 Name = "Label",
             })
         end
@@ -446,7 +449,7 @@ function GameSenseUI:CreateWindow(config)
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0, 10, 0, 0),
                 Size = UDim2.new(1, -20, 1, 0),
-                Font = Enum.Font.GothamBold,
+                Font = Theme.Font,
                 Text = columnName,
                 TextColor3 = Theme.Text,
                 TextSize = 12,
@@ -497,7 +500,7 @@ function GameSenseUI:CreateWindow(config)
                     Parent = SectionFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 1, 0),
-                    Font = Enum.Font.GothamBold,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Accent,
                     TextSize = 11,
@@ -537,10 +540,10 @@ function GameSenseUI:CreateWindow(config)
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 17, 0, 0),
                     Size = UDim2.new(1, -17, 1, 0),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -595,10 +598,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = SliderFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 14),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text .. ": " .. tostring(value) .. suffix,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -681,10 +684,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = ColumnContent,
                     BackgroundColor3 = Theme.ElementBackground,
                     Size = UDim2.new(1, 0, 0, 24),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     AutoButtonColor = false,
                 })
                 AddStroke(ButtonFrame, Theme.ElementBorder, 1)
@@ -727,10 +730,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = DropdownFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 14),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -739,10 +742,10 @@ function GameSenseUI:CreateWindow(config)
                     BackgroundColor3 = Theme.ElementBackground,
                     Position = UDim2.new(0, 0, 0, 16),
                     Size = UDim2.new(1, 0, 0, 22),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = "  " .. tostring(selected or "Select..."),
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     AutoButtonColor = false,
                     ZIndex = 5,
@@ -754,7 +757,7 @@ function GameSenseUI:CreateWindow(config)
                     BackgroundTransparency = 1,
                     Position = UDim2.new(1, -20, 0, 0),
                     Size = UDim2.new(0, 15, 1, 0),
-                    Font = Enum.Font.GothamBold,
+                    Font = Theme.Font,
                     Text = "v",
                     TextColor3 = Theme.Text,
                     TextSize = 10,
@@ -799,10 +802,10 @@ function GameSenseUI:CreateWindow(config)
                             Parent = OptionScroll,
                             BackgroundColor3 = Theme.TabBackground,
                             Size = UDim2.new(1, 0, 0, 20),
-                            Font = Enum.Font.SourceSans,
+                            Font = Theme.Font,
                             Text = "  " .. option,
                             TextColor3 = Theme.Text,
-                            TextSize = 14,
+                            TextSize = 12,
                             TextXAlignment = Enum.TextXAlignment.Left,
                             LayoutOrder = i,
                             AutoButtonColor = false,
@@ -878,10 +881,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = TextboxFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 14),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -890,12 +893,12 @@ function GameSenseUI:CreateWindow(config)
                     BackgroundColor3 = Theme.ElementBackground,
                     Position = UDim2.new(0, 0, 0, 16),
                     Size = UDim2.new(1, 0, 0, 20),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     PlaceholderText = placeholder,
                     PlaceholderColor3 = Theme.TextDark,
                     Text = "",
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     ClearTextOnFocus = false,
                 })
                 AddStroke(TextboxInput, Theme.ElementBorder, 1)
@@ -938,10 +941,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = KeybindFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0.6, 0, 1, 0),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -950,10 +953,10 @@ function GameSenseUI:CreateWindow(config)
                     BackgroundColor3 = Theme.ElementBackground,
                     Position = UDim2.new(0.6, 5, 0, 0),
                     Size = UDim2.new(0.4, -5, 1, 0),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = currentKey.Name,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = 11,
                     AutoButtonColor = false,
                 })
                 AddStroke(KeybindButton, Theme.ElementBorder, 1)
@@ -998,10 +1001,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = ColumnContent,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 18),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -1032,10 +1035,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = ToggleFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0.7, 0, 1, 0),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -1106,10 +1109,10 @@ function GameSenseUI:CreateWindow(config)
                     Parent = ColorPickerFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0.7, 0, 1, 0),
-                    Font = Enum.Font.SourceSans,
+                    Font = Theme.Font,
                     Text = text,
                     TextColor3 = Theme.Text,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 })
                 
@@ -1205,11 +1208,11 @@ function GameSenseUI:CreateWindow(config)
             Parent = WatermarkFrame,
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
-            Font = Enum.Font.SourceSans,
+            Font = Theme.Font,
             RichText = true,
             Text = 'game<font color="#90bb20">sense</font> | ' .. text,
             TextColor3 = Theme.Text,
-            TextSize = 14,
+            TextSize = 12,
         })
         
         WatermarkData.Frame = WatermarkFrame
@@ -1243,8 +1246,8 @@ function GameSenseUI:CreateWindow(config)
             
             local textSize = game:GetService("TextService"):GetTextSize(
                 WatermarkLabel.Text:gsub("<.->", ""),
-                14,
-                Enum.Font.SourceSans,
+                12,
+                Theme.Font,
                 Vector2.new(1000, 28)
             )
             WatermarkFrame.Size = UDim2.new(0, textSize.X + 20, 0, 28)
@@ -1343,7 +1346,7 @@ function GameSenseUI:CreateWindow(config)
             BackgroundTransparency = 1,
             Position = UDim2.new(0, 10, 0, 5),
             Size = UDim2.new(1, -20, 0, 18),
-            Font = Enum.Font.GothamBold,
+            Font = Theme.Font,
             Text = title,
             TextColor3 = Theme.Accent,
             TextSize = 12,
@@ -1355,10 +1358,10 @@ function GameSenseUI:CreateWindow(config)
             BackgroundTransparency = 1,
             Position = UDim2.new(0, 10, 0, 25),
             Size = UDim2.new(1, -20, 0, 20),
-            Font = Enum.Font.SourceSans,
+            Font = Theme.Font,
             Text = message,
             TextColor3 = Theme.Text,
-            TextSize = 12,
+            TextSize = 11,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
         })
