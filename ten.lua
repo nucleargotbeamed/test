@@ -185,7 +185,7 @@ function GameSenseUI:CreateWindow(config)
         Parent = MainFrame,
         BackgroundColor3 = Theme.TabBackground,
         Position = UDim2.new(0, 0, 0, 2),
-        Size = UDim2.new(0, 50, 1, -2),
+        Size = UDim2.new(0, 90, 1, -2),
         BorderSizePixel = 0,
     })
     
@@ -214,8 +214,8 @@ function GameSenseUI:CreateWindow(config)
         Name = "ContentContainer",
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 60, 0, 10),
-        Size = UDim2.new(1, -70, 1, -20),
+        Position = UDim2.new(0, 100, 0, 10),
+        Size = UDim2.new(1, -110, 1, -20),
     })
     
     local DragHandle = Create("Frame", {
@@ -263,7 +263,7 @@ function GameSenseUI:CreateWindow(config)
             Name = "Tab_" .. name,
             Parent = TabButtonContainer,
             BackgroundColor3 = Theme.TabBackground,
-            Size = UDim2.new(1, 0, 0, 50),
+            Size = UDim2.new(1, 0, 0, 60),
             BorderSizePixel = 0,
             Text = "",
             LayoutOrder = tabIndex,
@@ -276,7 +276,7 @@ function GameSenseUI:CreateWindow(config)
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0.5, 0, 0.5, 0),
                 AnchorPoint = Vector2.new(0.5, 0.5),
-                Size = UDim2.new(0, 24, 0, 24),
+                Size = UDim2.new(0, 32, 0, 32),
                 Image = icon,
                 ImageColor3 = Theme.TextDark,
                 Name = "Icon",
@@ -289,7 +289,7 @@ function GameSenseUI:CreateWindow(config)
                 Font = Enum.Font.GothamBold,
                 Text = string.sub(name, 1, 1),
                 TextColor3 = Theme.TextDark,
-                TextSize = 24,
+                TextSize = 32,
                 Name = "Label",
             })
         end
