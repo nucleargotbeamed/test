@@ -1,4 +1,3 @@
-
 local GameSenseUI = {}
 GameSenseUI.__index = GameSenseUI
 
@@ -7,7 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local Theme = {
+local DefaultTheme = {
     Background = Color3.fromRGB(17, 17, 17),
     TabBackground = Color3.fromRGB(12, 12, 12),
     Border = Color3.fromRGB(61, 65, 76),
@@ -24,8 +23,21 @@ local Theme = {
     ElementBorder = Color3.fromRGB(0, 0, 0),
     ColumnBackground = Color3.fromRGB(14, 14, 14),
     ColumnHeader = Color3.fromRGB(20, 20, 20),
-    Font = Enum.Font.Code
+    Font = Enum.Font.Code,
+    TextSize = 12,
+    ButtonTextSize = 12,
+    HeaderTextSize = 12,
+    TabTextSize = 28,
+    TabIconSize = 28,
+    WindowWidth = 660,
+    WindowHeight = 545,
+    TabSize = 65
 }
+
+local Theme = {}
+for key, value in pairs(DefaultTheme) do
+    Theme[key] = value
+end
 
 local function Create(instanceClass, properties)
     local instance = Instance.new(instanceClass)
@@ -126,18 +138,47 @@ end
 
 FPSCounter:Start()
 
-local TAB_SIZE = 100
+function GameSenseUI:SetTheme(newTheme)
+    for key, value in pairs(newTheme) do
+        if DefaultTheme[key] ~= nil then
+            Theme[key] = value
+        end
+    end
+end
+
+function GameSenseUI:GetTheme()
+    local themeCopy = {}
+    for key, value in pairs(Theme) do
+        themeCopy[key] = value
+    end
+    return themeCopy
+end
+
+function GameSenseUI:ResetTheme()
+    for key, value in pairs(DefaultTheme) do
+        Theme[key] = value
+    end
+end
 
 function GameSenseUI:CreateWindow(windowConfig)
     windowConfig = windowConfig or {}
     local title = windowConfig.Title or "game"
     local subtitle = windowConfig.Subtitle or "sense"
 
+    if windowConfig.Theme then
+        for key, value in pairs(windowConfig.Theme) do
+            if DefaultTheme[key] ~= nil then
+                Theme[key] = value
+            end
+        end
+    end
+
     local Window = {
         Tabs = {},
         CurrentTab = nil,
         ToggleKey = windowConfig.ToggleKey or Enum.KeyCode.Insert,
-        Connections = {}
+        Connections = {},
+        Theme = Theme
     }
 
     local ScreenGui = Create("ScreenGui", {
@@ -152,8 +193,8 @@ function GameSenseUI:CreateWindow(windowConfig)
         Name = "MainFrame",
         Parent = ScreenGui,
         BackgroundColor3 = Theme.Background,
-        Position = UDim2.new(0.5, -330, 0.5, -272),
-        Size = UDim2.new(0, 660, 0, 545),
+        Position = UDim2.new(0.5, -Theme.WindowWidth / 2, 0.5, -Theme.WindowHeight / 2),
+        Size = UDim2.new(0, Theme.WindowWidth, 0, Theme.WindowHeight),
         ClipsDescendants = true
     })
 
@@ -192,12 +233,49 @@ function GameSenseUI:CreateWindow(windowConfig)
         })
     })
 
+    local PositionIndicator = Create("Frame", {
+        Name = "PositionIndicator",
+        Parent = MainFrame,
+        BackgroundColor3 = Theme.Accent,
+        Position = UDim2.new(1, -15, 0, 5),
+        Size = UDim2.new(0, 10, 0, 10),
+        ZIndex = 100
+    })
+    AddStroke(PositionIndicator, Theme.ElementBorder, 1)
+
+    local positionDragging = false
+    local positionDragStart = nil
+    local positionStartPos = nil
+
+    PositionIndicator.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            positionDragging = true
+            positionDragStart = input.Position
+            positionStartPos = MainFrame.Position
+            PositionIndicator.BackgroundColor3 = Theme.AccentAlt
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if positionDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - positionDragStart
+            MainFrame.Position = UDim2.new(positionStartPos.X.Scale, positionStartPos.X.Offset + delta.X, positionStartPos.Y.Scale, positionStartPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and positionDragging then
+            positionDragging = false
+            PositionIndicator.BackgroundColor3 = Theme.Accent
+        end
+    end)
+
     local TabContainer = Create("Frame", {
         Name = "TabContainer",
         Parent = MainFrame,
         BackgroundColor3 = Theme.TabBackground,
         Position = UDim2.new(0, 0, 0, 2),
-        Size = UDim2.new(0, TAB_SIZE, 1, -2),
+        Size = UDim2.new(0, Theme.TabSize, 1, -2),
         BorderSizePixel = 0
     })
 
@@ -226,15 +304,15 @@ function GameSenseUI:CreateWindow(windowConfig)
         Name = "ContentContainer",
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, TAB_SIZE + 10, 0, 10),
-        Size = UDim2.new(1, -(TAB_SIZE + 20), 1, -20)
+        Position = UDim2.new(0, Theme.TabSize + 10, 0, 10),
+        Size = UDim2.new(1, -(Theme.TabSize + 20), 1, -20)
     })
 
     local DragHandle = Create("Frame", {
         Name = "DragHandle",
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 20)
+        Size = UDim2.new(1, -20, 0, 20)
     })
     MakeDraggable(MainFrame, DragHandle)
 
@@ -261,6 +339,22 @@ function GameSenseUI:CreateWindow(windowConfig)
         return FPSCounter:Get()
     end
 
+    function Window:SetPosition(x, y)
+        MainFrame.Position = UDim2.new(0, x, 0, y)
+    end
+
+    function Window:GetPosition()
+        return MainFrame.AbsolutePosition.X, MainFrame.AbsolutePosition.Y
+    end
+
+    function Window:SetSize(width, height)
+        MainFrame.Size = UDim2.new(0, width, 0, height)
+    end
+
+    function Window:GetSize()
+        return MainFrame.AbsoluteSize.X, MainFrame.AbsoluteSize.Y
+    end
+
     function Window:CreateTab(tabConfig)
         tabConfig = tabConfig or {}
         local tabName = tabConfig.Name or tabConfig.Text or "Tab"
@@ -276,7 +370,7 @@ function GameSenseUI:CreateWindow(windowConfig)
             Name = "Tab_" .. tabName,
             Parent = TabButtonContainer,
             BackgroundColor3 = Theme.TabBackground,
-            Size = UDim2.new(0, TAB_SIZE, 0, TAB_SIZE),
+            Size = UDim2.new(0, Theme.TabSize, 0, Theme.TabSize),
             BorderSizePixel = 0,
             Text = "",
             LayoutOrder = tabIndex,
@@ -289,7 +383,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0.5, 0, 0.5, 0),
                 AnchorPoint = Vector2.new(0.5, 0.5),
-                Size = UDim2.new(0, 28, 0, 28),
+                Size = UDim2.new(0, Theme.TabIconSize, 0, Theme.TabIconSize),
                 Image = tabIcon,
                 ImageColor3 = Theme.TextDark,
                 Name = "Icon"
@@ -302,7 +396,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 Font = Theme.Font,
                 Text = string.sub(tabName, 1, 1),
                 TextColor3 = Theme.TextDark,
-                TextSize = 28,
+                TextSize = Theme.TabTextSize,
                 Name = "Label"
             })
         end
@@ -466,7 +560,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 Font = Theme.Font,
                 Text = columnName,
                 TextColor3 = Theme.Text,
-                TextSize = 12,
+                TextSize = Theme.HeaderTextSize,
                 TextXAlignment = Enum.TextXAlignment.Left
             })
 
@@ -491,7 +585,7 @@ function GameSenseUI:CreateWindow(windowConfig)
 
             Create("UIPadding", {
                 Parent = ColumnContent,
-                PaddingTop = UDim.new(0, 10),
+                PaddingTop = UDim.new(0, 8),
                 PaddingLeft = UDim.new(0, 8),
                 PaddingRight = UDim.new(0, 8),
                 PaddingBottom = UDim.new(0, 8)
@@ -500,7 +594,14 @@ function GameSenseUI:CreateWindow(windowConfig)
             Column.Frame = ColumnFrame
             Column.Content = ColumnContent
 
-            function Column:CreateSection(sectionText)
+            function Column:CreateSection(sectionConfig)
+                if type(sectionConfig) == "string" then
+                    sectionConfig = {Text = sectionConfig}
+                end
+                sectionConfig = sectionConfig or {}
+                local sectionText = sectionConfig.Text or "Section"
+                local sectionTextSize = sectionConfig.TextSize or Theme.TextSize
+
                 local Section = {}
 
                 local SectionFrame = Create("Frame", {
@@ -510,16 +611,28 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Size = UDim2.new(1, 0, 0, 20)
                 })
 
-                Create("TextLabel", {
+                local SectionLabel = Create("TextLabel", {
                     Parent = SectionFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 1, 0),
                     Font = Theme.Font,
                     Text = sectionText,
                     TextColor3 = Theme.Accent,
-                    TextSize = 11,
+                    TextSize = sectionTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
+
+                function Section:SetText(newText)
+                    SectionLabel.Text = newText
+                end
+
+                function Section:SetTextSize(newSize)
+                    SectionLabel.TextSize = newSize
+                end
+
+                function Section:SetColor(newColor)
+                    SectionLabel.TextColor3 = newColor
+                end
 
                 return Section
             end
@@ -529,6 +642,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 local checkboxText = checkboxConfig.Text or "Checkbox"
                 local checkboxDefault = checkboxConfig.Default or false
                 local checkboxCallback = checkboxConfig.Callback or function() end
+                local checkboxTextSize = checkboxConfig.TextSize or Theme.TextSize
 
                 local Checkbox = {}
                 local toggled = checkboxDefault
@@ -549,7 +663,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 })
                 AddStroke(CheckboxIndicator, Theme.ElementBorder, 1)
 
-                Create("TextLabel", {
+                local CheckboxLabel = Create("TextLabel", {
                     Parent = CheckboxFrame,
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 17, 0, 0),
@@ -557,7 +671,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Font = Theme.Font,
                     Text = checkboxText,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = checkboxTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -592,6 +706,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     return toggled
                 end
 
+                function Checkbox:SetText(newText)
+                    CheckboxLabel.Text = newText
+                end
+
+                function Checkbox:SetTextSize(newSize)
+                    CheckboxLabel.TextSize = newSize
+                end
+
                 table.insert(Column.Elements, Checkbox)
                 return Checkbox
             end
@@ -605,6 +727,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 local sliderIncrement = sliderConfig.Increment or 1
                 local sliderSuffix = sliderConfig.Suffix or ""
                 local sliderCallback = sliderConfig.Callback or function() end
+                local sliderTextSize = sliderConfig.TextSize or Theme.TextSize
 
                 local Slider = {}
                 local sliderValue = sliderDefault
@@ -623,7 +746,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Font = Theme.Font,
                     Text = sliderText .. ": " .. tostring(sliderValue) .. sliderSuffix,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = sliderTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -690,6 +813,23 @@ function GameSenseUI:CreateWindow(windowConfig)
                     return sliderValue
                 end
 
+                function Slider:SetText(newText)
+                    sliderText = newText
+                    SliderLabel.Text = sliderText .. ": " .. tostring(sliderValue) .. sliderSuffix
+                end
+
+                function Slider:SetTextSize(newSize)
+                    SliderLabel.TextSize = newSize
+                end
+
+                function Slider:SetRange(newMin, newMax)
+                    sliderMin = newMin
+                    sliderMax = newMax
+                    sliderValue = math.clamp(sliderValue, sliderMin, sliderMax)
+                    SliderFill.Size = UDim2.new((sliderValue - sliderMin) / (sliderMax - sliderMin), 0, 1, 0)
+                    SliderLabel.Text = sliderText .. ": " .. tostring(sliderValue) .. sliderSuffix
+                end
+
                 table.insert(Column.Elements, Slider)
                 return Slider
             end
@@ -698,6 +838,8 @@ function GameSenseUI:CreateWindow(windowConfig)
                 buttonConfig = buttonConfig or {}
                 local buttonText = buttonConfig.Text or "Button"
                 local buttonCallback = buttonConfig.Callback or function() end
+                local buttonTextSize = buttonConfig.TextSize or Theme.ButtonTextSize
+                local buttonHeight = buttonConfig.Height or 24
 
                 local Button = {}
 
@@ -705,11 +847,11 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Name = "Button_" .. buttonText,
                     Parent = ColumnContent,
                     BackgroundColor3 = Theme.ElementBackground,
-                    Size = UDim2.new(1, 0, 0, 24),
+                    Size = UDim2.new(1, 0, 0, buttonHeight),
                     Font = Theme.Font,
                     Text = buttonText,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = buttonTextSize,
                     AutoButtonColor = false
                 })
                 AddStroke(ButtonFrame, Theme.ElementBorder, 1)
@@ -724,6 +866,22 @@ function GameSenseUI:CreateWindow(windowConfig)
                     TweenService:Create(ButtonFrame, TweenInfo.new(0.1), {BackgroundColor3 = Theme.ElementBackground}):Play()
                 end)
 
+                function Button:SetText(newText)
+                    ButtonFrame.Text = newText
+                end
+
+                function Button:SetTextSize(newSize)
+                    ButtonFrame.TextSize = newSize
+                end
+
+                function Button:SetHeight(newHeight)
+                    ButtonFrame.Size = UDim2.new(1, 0, 0, newHeight)
+                end
+
+                function Button:SetCallback(newCallback)
+                    buttonCallback = newCallback
+                end
+
                 table.insert(Column.Elements, Button)
                 return Button
             end
@@ -734,6 +892,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 local dropdownOptions = dropdownConfig.Options or {}
                 local dropdownDefault = dropdownConfig.Default or dropdownOptions[1]
                 local dropdownCallback = dropdownConfig.Callback or function() end
+                local dropdownTextSize = dropdownConfig.TextSize or Theme.TextSize
 
                 local Dropdown = {}
                 local selectedOption = dropdownDefault
@@ -748,14 +907,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     ZIndex = 5
                 })
 
-                Create("TextLabel", {
+                local DropdownLabel = Create("TextLabel", {
                     Parent = DropdownFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 14),
                     Font = Theme.Font,
                     Text = dropdownText,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = dropdownTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -767,7 +926,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Font = Theme.Font,
                     Text = "  " .. tostring(selectedOption or "Select..."),
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = dropdownTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     AutoButtonColor = false,
                     ZIndex = 5
@@ -827,7 +986,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                             Font = Theme.Font,
                             Text = "  " .. option,
                             TextColor3 = Theme.Text,
-                            TextSize = 12,
+                            TextSize = dropdownTextSize,
                             TextXAlignment = Enum.TextXAlignment.Left,
                             LayoutOrder = i,
                             AutoButtonColor = false,
@@ -884,6 +1043,16 @@ function GameSenseUI:CreateWindow(windowConfig)
                     refreshDropdownOptions()
                 end
 
+                function Dropdown:SetText(newText)
+                    dropdownText = newText
+                    DropdownLabel.Text = newText
+                end
+
+                function Dropdown:SetTextSize(newSize)
+                    DropdownLabel.TextSize = newSize
+                    DropdownButton.TextSize = newSize
+                end
+
                 table.insert(Column.Elements, Dropdown)
                 return Dropdown
             end
@@ -893,6 +1062,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 local textboxText = textboxConfig.Text or "Textbox"
                 local textboxPlaceholder = textboxConfig.Placeholder or ""
                 local textboxCallback = textboxConfig.Callback or function() end
+                local textboxTextSize = textboxConfig.TextSize or Theme.TextSize
 
                 local Textbox = {}
 
@@ -903,14 +1073,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Size = UDim2.new(1, 0, 0, 38)
                 })
 
-                Create("TextLabel", {
+                local TextboxLabel = Create("TextLabel", {
                     Parent = TextboxFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 14),
                     Font = Theme.Font,
                     Text = textboxText,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = textboxTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -924,7 +1094,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                     PlaceholderColor3 = Theme.TextDark,
                     Text = "",
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = textboxTextSize,
                     ClearTextOnFocus = false
                 })
                 AddStroke(TextboxInput, Theme.ElementBorder, 1)
@@ -941,6 +1111,19 @@ function GameSenseUI:CreateWindow(windowConfig)
                     return TextboxInput.Text
                 end
 
+                function Textbox:SetText(newText)
+                    TextboxLabel.Text = newText
+                end
+
+                function Textbox:SetTextSize(newSize)
+                    TextboxLabel.TextSize = newSize
+                    TextboxInput.TextSize = newSize
+                end
+
+                function Textbox:SetPlaceholder(newPlaceholder)
+                    TextboxInput.PlaceholderText = newPlaceholder
+                end
+
                 table.insert(Column.Elements, Textbox)
                 return Textbox
             end
@@ -951,6 +1134,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 local keybindDefault = keybindConfig.Default or Enum.KeyCode.Unknown
                 local keybindCallback = keybindConfig.Callback or function() end
                 local keybindChangedCallback = keybindConfig.ChangedCallback or function() end
+                local keybindTextSize = keybindConfig.TextSize or Theme.TextSize
 
                 local Keybind = {}
                 local currentKey = keybindDefault
@@ -963,14 +1147,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Size = UDim2.new(1, 0, 0, 20)
                 })
 
-                Create("TextLabel", {
+                local KeybindLabel = Create("TextLabel", {
                     Parent = KeybindFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0.6, 0, 1, 0),
                     Font = Theme.Font,
                     Text = keybindText,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = keybindTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -982,7 +1166,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Font = Theme.Font,
                     Text = currentKey.Name,
                     TextColor3 = Theme.Text,
-                    TextSize = 11,
+                    TextSize = keybindTextSize - 1,
                     AutoButtonColor = false
                 })
                 AddStroke(KeybindButton, Theme.ElementBorder, 1)
@@ -1015,11 +1199,28 @@ function GameSenseUI:CreateWindow(windowConfig)
                     return currentKey
                 end
 
+                function Keybind:SetText(newText)
+                    KeybindLabel.Text = newText
+                end
+
+                function Keybind:SetTextSize(newSize)
+                    KeybindLabel.TextSize = newSize
+                    KeybindButton.TextSize = newSize - 1
+                end
+
                 table.insert(Column.Elements, Keybind)
                 return Keybind
             end
 
-            function Column:CreateLabel(labelText)
+            function Column:CreateLabel(labelConfig)
+                if type(labelConfig) == "string" then
+                    labelConfig = {Text = labelConfig}
+                end
+                labelConfig = labelConfig or {}
+                local labelText = labelConfig.Text or "Label"
+                local labelTextSize = labelConfig.TextSize or Theme.TextSize
+                local labelColor = labelConfig.Color or Theme.Text
+
                 local Label = {}
 
                 local LabelFrame = Create("TextLabel", {
@@ -1029,13 +1230,21 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Size = UDim2.new(1, 0, 0, 18),
                     Font = Theme.Font,
                     Text = labelText,
-                    TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextColor3 = labelColor,
+                    TextSize = labelTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
                 function Label:Set(newText)
                     LabelFrame.Text = newText
+                end
+
+                function Label:SetTextSize(newSize)
+                    LabelFrame.TextSize = newSize
+                end
+
+                function Label:SetColor(newColor)
+                    LabelFrame.TextColor3 = newColor
                 end
 
                 return Label
@@ -1046,6 +1255,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 local toggleText = toggleConfig.Text or "Toggle"
                 local toggleDefault = toggleConfig.Default or false
                 local toggleCallback = toggleConfig.Callback or function() end
+                local toggleTextSize = toggleConfig.TextSize or Theme.TextSize
 
                 local Toggle = {}
                 local toggled = toggleDefault
@@ -1057,14 +1267,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Size = UDim2.new(1, 0, 0, 20)
                 })
 
-                Create("TextLabel", {
+                local ToggleLabel = Create("TextLabel", {
                     Parent = ToggleFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0.7, 0, 1, 0),
                     Font = Theme.Font,
                     Text = toggleText,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = toggleTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -1129,6 +1339,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     return toggled
                 end
 
+                function Toggle:SetText(newText)
+                    ToggleLabel.Text = newText
+                end
+
+                function Toggle:SetTextSize(newSize)
+                    ToggleLabel.TextSize = newSize
+                end
+
                 table.insert(Column.Elements, Toggle)
                 return Toggle
             end
@@ -1138,6 +1356,7 @@ function GameSenseUI:CreateWindow(windowConfig)
                 local colorPickerText = colorPickerConfig.Text or "Color"
                 local colorPickerDefault = colorPickerConfig.Default or Color3.fromRGB(255, 255, 255)
                 local colorPickerCallback = colorPickerConfig.Callback or function() end
+                local colorPickerTextSize = colorPickerConfig.TextSize or Theme.TextSize
 
                 local ColorPicker = {}
                 local currentColor = colorPickerDefault
@@ -1149,14 +1368,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     Size = UDim2.new(1, 0, 0, 20)
                 })
 
-                Create("TextLabel", {
+                local ColorPickerLabel = Create("TextLabel", {
                     Parent = ColorPickerFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0.7, 0, 1, 0),
                     Font = Theme.Font,
                     Text = colorPickerText,
                     TextColor3 = Theme.Text,
-                    TextSize = 12,
+                    TextSize = colorPickerTextSize,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -1197,6 +1416,14 @@ function GameSenseUI:CreateWindow(windowConfig)
                     return currentColor
                 end
 
+                function ColorPicker:SetText(newText)
+                    ColorPickerLabel.Text = newText
+                end
+
+                function ColorPicker:SetTextSize(newSize)
+                    ColorPickerLabel.TextSize = newSize
+                end
+
                 table.insert(Column.Elements, ColorPicker)
                 return ColorPicker
             end
@@ -1215,13 +1442,15 @@ function GameSenseUI:CreateWindow(windowConfig)
         local watermarkShowFPS = watermarkConfig.ShowFPS or false
         local watermarkShowPing = watermarkConfig.ShowPing or false
         local watermarkShowTime = watermarkConfig.ShowTime or false
+        local watermarkTextSize = watermarkConfig.TextSize or Theme.TextSize
 
         local WatermarkData = {
             showFPS = watermarkShowFPS,
             showPing = watermarkShowPing,
             showTime = watermarkShowTime,
             customText = watermarkText,
-            running = true
+            running = true,
+            textSize = watermarkTextSize
         }
 
         local WatermarkFrame = Create("Frame", {
@@ -1257,11 +1486,36 @@ function GameSenseUI:CreateWindow(windowConfig)
             RichText = true,
             Text = 'game<font color="#90bb20">sense</font> | ' .. watermarkText,
             TextColor3 = Theme.Text,
-            TextSize = 12
+            TextSize = watermarkTextSize
         })
 
         WatermarkData.Frame = WatermarkFrame
         WatermarkData.Label = WatermarkLabel
+
+        local wmDragging = false
+        local wmDragStart = nil
+        local wmStartPos = nil
+
+        WatermarkFrame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                wmDragging = true
+                wmDragStart = input.Position
+                wmStartPos = WatermarkFrame.Position
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if wmDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                local delta = input.Position - wmDragStart
+                WatermarkFrame.Position = UDim2.new(wmStartPos.X.Scale, wmStartPos.X.Offset + delta.X, wmStartPos.Y.Scale, wmStartPos.Y.Offset + delta.Y)
+            end
+        end)
+
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                wmDragging = false
+            end
+        end)
 
         local function updateWatermark()
             local parts = {'game<font color="#90bb20">sense</font>'}
@@ -1291,9 +1545,8 @@ function GameSenseUI:CreateWindow(windowConfig)
 
             local textService = game:GetService("TextService")
             local plainText = WatermarkLabel.Text:gsub("<.->", "")
-            local textSize = textService:GetTextSize(plainText, 12, Theme.Font, Vector2.new(1000, 28))
+            local textSize = textService:GetTextSize(plainText, WatermarkData.textSize, Theme.Font, Vector2.new(1000, 28))
             WatermarkFrame.Size = UDim2.new(0, textSize.X + 20, 0, 28)
-            WatermarkFrame.Position = UDim2.new(1, -(textSize.X + 35), 0, 15)
         end
 
         task.spawn(function()
@@ -1327,6 +1580,19 @@ function GameSenseUI:CreateWindow(windowConfig)
             WatermarkFrame.Visible = visible
         end
 
+        function WatermarkData:SetTextSize(newSize)
+            WatermarkData.textSize = newSize
+            WatermarkLabel.TextSize = newSize
+        end
+
+        function WatermarkData:SetPosition(x, y)
+            WatermarkFrame.Position = UDim2.new(0, x, 0, y)
+        end
+
+        function WatermarkData:GetPosition()
+            return WatermarkFrame.AbsolutePosition.X, WatermarkFrame.AbsolutePosition.Y
+        end
+
         function WatermarkData:Destroy()
             WatermarkData.running = false
             WatermarkFrame:Destroy()
@@ -1340,6 +1606,8 @@ function GameSenseUI:CreateWindow(windowConfig)
         local notifyTitle = notifyConfig.Title or "Notification"
         local notifyMessage = notifyConfig.Message or ""
         local notifyDuration = notifyConfig.Duration or 3
+        local notifyTitleSize = notifyConfig.TitleSize or Theme.TextSize
+        local notifyMessageSize = notifyConfig.MessageSize or Theme.TextSize - 1
 
         local NotificationHolder = ScreenGui:FindFirstChild("NotificationHolder")
         if not NotificationHolder then
@@ -1391,7 +1659,7 @@ function GameSenseUI:CreateWindow(windowConfig)
             Font = Theme.Font,
             Text = notifyTitle,
             TextColor3 = Theme.Accent,
-            TextSize = 12,
+            TextSize = notifyTitleSize,
             TextXAlignment = Enum.TextXAlignment.Left
         })
 
@@ -1403,7 +1671,7 @@ function GameSenseUI:CreateWindow(windowConfig)
             Font = Theme.Font,
             Text = notifyMessage,
             TextColor3 = Theme.Text,
-            TextSize = 11,
+            TextSize = notifyMessageSize,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true
         })
