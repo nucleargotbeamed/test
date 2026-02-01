@@ -121,11 +121,12 @@ function GameSenseUI:CreateWindow(config)
     config = config or {}
     local title = config.Title or "game"
     local subtitle = config.Subtitle or "sense"
-    local toggleKey = config.ToggleKey or Enum.KeyCode.Insert
     
     local Window = {}
     Window.Tabs = {}
     Window.CurrentTab = nil
+    Window.ToggleKey = config.ToggleKey or Enum.KeyCode.Insert
+    Window.Connections = {}
     
     local ScreenGui = Create("ScreenGui", {
         Name = "GameSenseUI",
@@ -225,8 +226,8 @@ function GameSenseUI:CreateWindow(config)
     })
     MakeDraggable(MainFrame, DragHandle)
     
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and input.KeyCode == toggleKey then
+    Window.Connections.ToggleKey = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and input.KeyCode == Window.ToggleKey then
             MainFrame.Visible = not MainFrame.Visible
         end
     end)
@@ -235,6 +236,14 @@ function GameSenseUI:CreateWindow(config)
     Window.MainFrame = MainFrame
     Window.TabContainer = TabButtonContainer
     Window.ContentContainer = ContentContainer
+    
+    function Window:SetToggleKey(key)
+        Window.ToggleKey = key
+    end
+    
+    function Window:GetToggleKey()
+        return Window.ToggleKey
+    end
     
     function Window:GetFPS()
         return FPSCounter:Get()
@@ -912,6 +921,7 @@ function GameSenseUI:CreateWindow(config)
                 local text = config.Text or "Keybind"
                 local default = config.Default or Enum.KeyCode.Unknown
                 local callback = config.Callback or function() end
+                local changedCallback = config.ChangedCallback or function() end
                 
                 local Keybind = {}
                 local currentKey = default
@@ -959,6 +969,7 @@ function GameSenseUI:CreateWindow(config)
                             currentKey = input.KeyCode
                             KeybindButton.Text = currentKey.Name
                             listening = false
+                            changedCallback(currentKey)
                         end
                     elseif input.KeyCode == currentKey and not gameProcessed then
                         callback(currentKey)
@@ -968,6 +979,7 @@ function GameSenseUI:CreateWindow(config)
                 function Keybind:Set(key)
                     currentKey = key
                     KeybindButton.Text = key.Name
+                    changedCallback(key)
                 end
                 
                 function Keybind:Get()
@@ -1215,8 +1227,12 @@ function GameSenseUI:CreateWindow(config)
             end
             
             if WatermarkData.showPing then
-                local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
-                table.insert(parts, "ping: " .. tostring(math.floor(ping)) .. "ms")
+                local success, ping = pcall(function()
+                    return game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+                end)
+                if success then
+                    table.insert(parts, "ping: " .. tostring(math.floor(ping)) .. "ms")
+                end
             end
             
             if WatermarkData.showTime then
@@ -1363,6 +1379,11 @@ function GameSenseUI:CreateWindow(config)
     
     function Window:Destroy()
         FPSCounter:Stop()
+        for _, connection in pairs(Window.Connections) do
+            if connection then
+                connection:Disconnect()
+            end
+        end
         ScreenGui:Destroy()
     end
     
