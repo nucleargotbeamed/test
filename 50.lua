@@ -72,11 +72,10 @@ function Library:CreateWindow(title)
     local Gradient = Instance.new("UIGradient")
     Gradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(69, 170, 242)),
-        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(252, 92, 101)),
-        ColorSequenceKeypoint.new(0.66, Color3.fromRGB(254, 211, 48)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(69, 170, 242))
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(252, 92, 101)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(254, 211, 48))
     }
-    Gradient.Rotation = 90
+    Gradient.Rotation = 270
     Gradient.Parent = TopLine
     
     local Watermark = Instance.new("TextLabel")
@@ -219,7 +218,7 @@ function Library:CreateWindow(title)
             
             local CheckboxFrame = Instance.new("Frame")
             CheckboxFrame.Name = "Checkbox"
-            CheckboxFrame.Size = UDim2.new(1, 0, 0, 20)
+            CheckboxFrame.Size = UDim2.new(1, 0, 0, 15)
             CheckboxFrame.BackgroundTransparency = 1
             CheckboxFrame.Parent = TabContent
             
@@ -233,8 +232,8 @@ function Library:CreateWindow(title)
             CheckboxButton.Parent = CheckboxFrame
             
             local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -20, 1, 0)
-            Label.Position = UDim2.new(0, 20, 0, 0)
+            Label.Size = UDim2.new(1, -27, 1, 0)
+            Label.Position = UDim2.new(0, 27, 0, 2)
             Label.BackgroundTransparency = 1
             Label.Text = text
             Label.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -266,6 +265,153 @@ function Library:CreateWindow(title)
             end)
             
             return CheckboxFrame
+        end
+        
+        function Tab:AddButton(text, callback)
+            callback = callback or function() end
+            
+            local ButtonFrame = Instance.new("Frame")
+            ButtonFrame.Name = "Button"
+            ButtonFrame.Size = UDim2.new(1, 0, 0, 20)
+            ButtonFrame.BackgroundTransparency = 1
+            ButtonFrame.Parent = TabContent
+            
+            local Button = Instance.new("TextButton")
+            Button.Size = UDim2.new(0, 80, 0, 18)
+            Button.Position = UDim2.new(0, 0, 0, 0)
+            Button.BackgroundColor3 = Color3.fromRGB(71, 71, 71)
+            Button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            Button.BorderSizePixel = 1
+            Button.Text = text
+            Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Button.Font = Enum.Font.SourceSans
+            Button.TextSize = 9
+            Button.Parent = ButtonFrame
+            
+            Button.MouseButton1Click:Connect(function()
+                callback()
+            end)
+            
+            Button.MouseEnter:Connect(function()
+                Button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+            end)
+            
+            Button.MouseLeave:Connect(function()
+                Button.BackgroundColor3 = Color3.fromRGB(71, 71, 71)
+            end)
+            
+            return ButtonFrame
+        end
+        
+        function Tab:AddSlider(text, min, max, default, callback)
+            callback = callback or function() end
+            
+            local SliderFrame = Instance.new("Frame")
+            SliderFrame.Name = "Slider"
+            SliderFrame.Size = UDim2.new(1, 0, 0, 30)
+            SliderFrame.BackgroundTransparency = 1
+            SliderFrame.Parent = TabContent
+            
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, 0, 0, 12)
+            Label.Position = UDim2.new(0, 0, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = text
+            Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Label.Font = Enum.Font.SourceSans
+            Label.TextSize = 9
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = SliderFrame
+            
+            local SliderBack = Instance.new("Frame")
+            SliderBack.Size = UDim2.new(1, 0, 0, 4)
+            SliderBack.Position = UDim2.new(0, 0, 0, 18)
+            SliderBack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            SliderBack.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            SliderBack.BorderSizePixel = 1
+            SliderBack.Parent = SliderFrame
+            
+            local SliderFill = Instance.new("Frame")
+            SliderFill.Size = UDim2.new(0, 0, 1, 0)
+            SliderFill.BackgroundColor3 = Color3.fromRGB(149, 192, 33)
+            SliderFill.BorderSizePixel = 0
+            SliderFill.Parent = SliderBack
+            
+            local ValueLabel = Instance.new("TextLabel")
+            ValueLabel.Size = UDim2.new(0, 40, 0, 12)
+            ValueLabel.Position = UDim2.new(1, -40, 0, 0)
+            ValueLabel.BackgroundTransparency = 1
+            ValueLabel.Text = tostring(default)
+            ValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            ValueLabel.Font = Enum.Font.SourceSans
+            ValueLabel.TextSize = 9
+            ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+            ValueLabel.Parent = SliderFrame
+            
+            local dragging = false
+            local value = default
+            
+            local function UpdateSlider(input)
+                local sizeX = SliderBack.AbsoluteSize.X
+                local posX = SliderBack.AbsolutePosition.X
+                local mouseX = input.Position.X
+                local relativeX = math.clamp(mouseX - posX, 0, sizeX)
+                local percent = relativeX / sizeX
+                value = math.floor(min + (max - min) * percent)
+                SliderFill.Size = UDim2.new(percent, 0, 1, 0)
+                ValueLabel.Text = tostring(value)
+                callback(value)
+            end
+            
+            SliderBack.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = true
+                    UpdateSlider(input)
+                end
+            end)
+            
+            SliderBack.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+            
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    UpdateSlider(input)
+                end
+            end)
+            
+            UpdateSlider({Position = Vector3.new(SliderBack.AbsolutePosition.X + (SliderBack.AbsoluteSize.X * ((default - min) / (max - min))), 0, 0)})
+            
+            return SliderFrame
+        end
+        
+        function Tab:AddSection(text)
+            local SectionFrame = Instance.new("Frame")
+            SectionFrame.Name = "Section"
+            SectionFrame.Size = UDim2.new(1, 0, 0, 25)
+            SectionFrame.BackgroundTransparency = 1
+            SectionFrame.Parent = TabContent
+            
+            local SectionLabel = Instance.new("TextLabel")
+            SectionLabel.Size = UDim2.new(1, 0, 1, 0)
+            SectionLabel.BackgroundTransparency = 1
+            SectionLabel.Text = text
+            SectionLabel.TextColor3 = Color3.fromRGB(149, 192, 33)
+            SectionLabel.Font = Enum.Font.SourceSansBold
+            SectionLabel.TextSize = 11
+            SectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+            SectionLabel.Parent = SectionFrame
+            
+            local Line = Instance.new("Frame")
+            Line.Size = UDim2.new(1, 0, 0, 1)
+            Line.Position = UDim2.new(0, 0, 1, -5)
+            Line.BackgroundColor3 = Color3.fromRGB(50, 48, 52)
+            Line.BorderSizePixel = 0
+            Line.Parent = SectionFrame
+            
+            return SectionFrame
         end
         
         table.insert(Window.Tabs, Tab)
