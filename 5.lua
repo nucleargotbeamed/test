@@ -72,10 +72,11 @@ function Library:CreateWindow(title)
     local Gradient = Instance.new("UIGradient")
     Gradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(69, 170, 242)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(252, 92, 101)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(254, 211, 48))
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(252, 92, 101)),
+        ColorSequenceKeypoint.new(0.66, Color3.fromRGB(254, 211, 48)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(69, 170, 242))
     }
-    Gradient.Rotation = 100
+    Gradient.Rotation = 90
     Gradient.Parent = TopLine
     
     local Watermark = Instance.new("TextLabel")
@@ -95,7 +96,7 @@ function Library:CreateWindow(title)
     
     local TabContainer = Instance.new("Frame")
     TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(0, 60, 1, -2)
+    TabContainer.Size = UDim2.new(0, 90, 1, -2)
     TabContainer.Position = UDim2.new(0, 0, 0, 2)
     TabContainer.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     TabContainer.BorderSizePixel = 0
@@ -107,8 +108,8 @@ function Library:CreateWindow(title)
     
     local ContentFrame = Instance.new("Frame")
     ContentFrame.Name = "ContentFrame"
-    ContentFrame.Size = UDim2.new(1, -60, 1, -2)
-    ContentFrame.Position = UDim2.new(0, 60, 0, 2)
+    ContentFrame.Size = UDim2.new(1, -90, 1, -2)
+    ContentFrame.Position = UDim2.new(0, 90, 0, 2)
     ContentFrame.BackgroundTransparency = 1
     ContentFrame.Parent = MainFrame
     
@@ -134,12 +135,12 @@ function Library:CreateWindow(title)
         
         local TabButton = Instance.new("TextButton")
         TabButton.Name = name
-        TabButton.Size = UDim2.new(1, 0, 0, 70)
+        TabButton.Size = UDim2.new(1, 0, 0, 90)
         TabButton.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
         TabButton.BorderSizePixel = 0
         TabButton.Text = name
         TabButton.TextColor3 = Color3.fromRGB(90, 90, 90)
-        TabButton.Font = Enum.Font.Arcade
+        TabButton.Font = Enum.Font.SourceSans
         TabButton.TextSize = 58
         TabButton.Parent = TabContainer
         
@@ -156,7 +157,7 @@ function Library:CreateWindow(title)
         TabContent.Position = UDim2.new(0, 85, 0, 85)
         TabContent.BackgroundTransparency = 1
         TabContent.BorderSizePixel = 0
-        TabContent.ScrollBarThickness = 4
+        TabContent.ScrollBarThickness = 0
         TabContent.ScrollBarImageColor3 = Color3.fromRGB(90, 90, 90)
         TabContent.Visible = false
         TabContent.Parent = ContentFrame
@@ -237,7 +238,7 @@ function Library:CreateWindow(title)
             Label.BackgroundTransparency = 1
             Label.Text = text
             Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Label.Font = Enum.Font.Verdana
+            Label.Font = Enum.Font.SourceSans
             Label.TextSize = 9
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = CheckboxFrame
