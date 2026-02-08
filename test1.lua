@@ -156,6 +156,9 @@ function Library:CreateTab(Window, name)
 
     return Tab
 end
+function Library:AddWeaponCategory(Window, name)
+    return self:CreateTab(Window, name)
+end
 
 function Library:CreateSection(Tab, name, width)
     local Section = {}
