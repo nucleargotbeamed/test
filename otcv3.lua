@@ -41,15 +41,17 @@ function Library:CreateWindow(title)
     local dragStart = nil
     local startPos = nil
     local dragInput = nil
+    local sliderActive = false
     
     local function updateInput(input)
+        if sliderActive then return end
         local delta = input.Position - dragStart
         local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         TweenService:Create(MainFrame, TweenInfo.new(0.15), {Position = position}):Play()
     end
     
     MainFrame.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not sliderActive then
             dragToggle = true
             dragStart = input.Position
             startPos = MainFrame.Position
@@ -69,7 +71,7 @@ function Library:CreateWindow(title)
     end)
     
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragToggle then
+        if input == dragInput and dragToggle and not sliderActive then
             updateInput(input)
         end
     end)
@@ -168,7 +170,7 @@ function Library:CreateWindow(title)
         Name = "SubTabBar",
         Parent = MainFrame,
         BackgroundColor3 = Color3.fromRGB(32, 32, 38),
-        Position = UDim2.new(0, 15, 0, 23),
+        Position = UDim2.new(0, 15, 0, 53),
         Size = UDim2.new(0, 550, 0, 70),
         BorderSizePixel = 0,
         Visible = false
@@ -197,8 +199,8 @@ function Library:CreateWindow(title)
     local ContentContainer = CreateInstance("Frame", {
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 98),
-        Size = UDim2.new(1, 0, 1, -168)
+        Position = UDim2.new(0, 0, 0, 128),
+        Size = UDim2.new(1, 0, 1, -198)
     })
     
     Window.CurrentTab = nil
@@ -241,6 +243,13 @@ function Library:CreateWindow(title)
             FillDirection = Enum.FillDirection.Horizontal,
             VerticalAlignment = Enum.VerticalAlignment.Top,
             Wraps = true
+        })
+        
+        CreateInstance("UIPadding", {
+            Parent = TabContent,
+            PaddingLeft = UDim.new(0, 25),
+            PaddingTop = UDim.new(0, 15),
+            PaddingRight = UDim.new(0, 25)
         })
         
         ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -327,6 +336,13 @@ function Library:CreateWindow(title)
                 Wraps = true
             })
             
+            CreateInstance("UIPadding", {
+                Parent = SubTabContent,
+                PaddingLeft = UDim.new(0, 25),
+                PaddingTop = UDim.new(0, 15),
+                PaddingRight = UDim.new(0, 25)
+            })
+            
             SubTabButton.MouseButton1Click:Connect(function()
                 for name, st in pairs(Tab.SubTabs) do
                     st.Label.TextTransparency = 0.5
@@ -382,11 +398,18 @@ function Library:CreateWindow(title)
                 BorderSizePixel = 0
             })
             
-            local SectionLabel = CreateInstance("TextLabel", {
+            local SectionHeaderBG = CreateInstance("Frame", {
                 Parent = SectionFrame,
-                BackgroundTransparency = 1,
-                Position = UDim2.new(0, 0, 0, -10),
+                BackgroundColor3 = Color3.fromRGB(45, 48, 57),
+                Position = UDim2.new(0, 0, 0, 2),
                 Size = UDim2.new(1, 0, 0, 20),
+                BorderSizePixel = 0
+            })
+            
+            local SectionLabel = CreateInstance("TextLabel", {
+                Parent = SectionHeaderBG,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 1, 0),
                 Font = Enum.Font.Gotham,
                 Text = sectionName,
                 TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -396,8 +419,8 @@ function Library:CreateWindow(title)
             local ElementContainer = CreateInstance("Frame", {
                 Parent = SectionFrame,
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 10, 0, 15),
-                Size = UDim2.new(1, -20, 1, -20)
+                Position = UDim2.new(0, 10, 0, 27),
+                Size = UDim2.new(1, -20, 1, -32)
             })
             
             local ElementLayout = CreateInstance("UIListLayout", {
@@ -410,7 +433,7 @@ function Library:CreateWindow(title)
             local elementCount = 0
             
             ElementLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                SectionFrame.Size = UDim2.new(0, 250, 0, math.max(200, ElementLayout.AbsoluteContentSize.Y + 30))
+                SectionFrame.Size = UDim2.new(0, 250, 0, math.max(200, ElementLayout.AbsoluteContentSize.Y + 42))
             end)
             
             function Section:AddToggle(name, default, callback)
@@ -551,7 +574,7 @@ function Library:CreateWindow(title)
                 SliderBG.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         dragging = true
-                        dragToggle = false
+                        sliderActive = true
                         UpdateSlider(input)
                     end
                 end)
@@ -565,6 +588,7 @@ function Library:CreateWindow(title)
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
                         dragging = false
+                        sliderActive = false
                     end
                 end)
                 
