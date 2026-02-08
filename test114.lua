@@ -25,11 +25,6 @@ local Colors = {
     }
 }
 
-local Fonts = {
-    Main = Enum.Font.Gotham,
-    Small = Enum.Font.Code
-}
-
 local function Create(className, properties)
     local instance = Instance.new(className)
     for prop, value in pairs(properties) do
@@ -55,12 +50,13 @@ function GameSenseLib:CreateWindow(options)
     
     local Window = {
         Tabs = {},
+        TabButtons = {},
         CurrentTab = nil,
         Visible = true
     }
     
-    local title = options.Title or "gamesense"
-    local subtitle = options.Subtitle or "norate"
+    local title = options.Title or "game"
+    local subtitle = options.Subtitle or "sense"
     local toggleKey = options.ToggleKey or Enum.KeyCode.RightShift
     
     local ScreenGui = Create("ScreenGui", {
@@ -82,11 +78,10 @@ function GameSenseLib:CreateWindow(options)
         BackgroundColor3 = Colors.Background,
         BorderSizePixel = 0,
         Position = UDim2.new(0.5, -330, 0.5, -272),
-        Size = UDim2.new(0, 660, 0, 545),
-        ClipsDescendants = true
+        Size = UDim2.new(0, 660, 0, 545)
     })
     
-    local MainBorder = Create("UIStroke", {
+    Create("UIStroke", {
         Parent = MainFrame,
         Color = Colors.Border,
         Thickness = 2
@@ -96,8 +91,8 @@ function GameSenseLib:CreateWindow(options)
         Name = "InnerBorder",
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 3, 0, 3),
-        Size = UDim2.new(1, -6, 1, -6)
+        Position = UDim2.new(0, 4, 0, 4),
+        Size = UDim2.new(1, -8, 1, -8)
     })
     
     Create("UIStroke", {
@@ -112,7 +107,7 @@ function GameSenseLib:CreateWindow(options)
         BackgroundColor3 = Color3.new(1, 1, 1),
         BorderSizePixel = 0,
         Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 0, 2)
+        Size = UDim2.new(1, 0, 0, 3)
     })
     
     Create("UIGradient", {
@@ -129,17 +124,24 @@ function GameSenseLib:CreateWindow(options)
         Parent = MainFrame,
         BackgroundColor3 = Colors.TabBackground,
         BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0, 2),
-        Size = UDim2.new(0, 90, 1, -2)
+        Position = UDim2.new(0, 0, 0, 3),
+        Size = UDim2.new(0, 100, 1, -3)
+    })
+    
+    local TabList = Create("Frame", {
+        Name = "TabList",
+        Parent = TabHolder,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0)
     })
     
     Create("UIListLayout", {
-        Parent = TabHolder,
+        Parent = TabList,
         SortOrder = Enum.SortOrder.LayoutOrder,
         Padding = UDim.new(0, 0)
     })
     
-    local TabBorderRight = Create("Frame", {
+    Create("Frame", {
         Name = "Border",
         Parent = TabHolder,
         BackgroundColor3 = Colors.TabBorder,
@@ -152,17 +154,18 @@ function GameSenseLib:CreateWindow(options)
         Name = "ContentHolder",
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 90, 0, 2),
-        Size = UDim2.new(1, -90, 1, -2)
+        Position = UDim2.new(0, 100, 0, 3),
+        Size = UDim2.new(1, -100, 1, -3),
+        ClipsDescendants = true
     })
-
+    
     local Watermark = Create("Frame", {
         Name = "Watermark",
         Parent = ScreenGui,
         BackgroundColor3 = Colors.Background,
         BorderSizePixel = 0,
-        Position = UDim2.new(1, -200, 0, 15),
-        Size = UDim2.new(0, 0, 0, 26),
+        Position = UDim2.new(1, -250, 0, 15),
+        Size = UDim2.new(0, 0, 0, 30),
         AutomaticSize = Enum.AutomaticSize.X,
         Visible = false
     })
@@ -175,45 +178,22 @@ function GameSenseLib:CreateWindow(options)
     
     Create("UIPadding", {
         Parent = Watermark,
-        PaddingLeft = UDim.new(0, 10),
-        PaddingRight = UDim.new(0, 10)
+        PaddingLeft = UDim.new(0, 12),
+        PaddingRight = UDim.new(0, 12)
     })
     
-    local WatermarkTitle = Create("TextLabel", {
+    local WatermarkText = Create("TextLabel", {
         Parent = Watermark,
         BackgroundTransparency = 1,
         Size = UDim2.new(0, 0, 1, 0),
         AutomaticSize = Enum.AutomaticSize.X,
-        Font = Fonts.Main,
-        Text = title,
+        Font = Enum.Font.Gotham,
+        RichText = true,
+        Text = title .. "<font color='rgb(144,187,32)'>sense</font> | " .. subtitle,
         TextColor3 = Colors.TextActive,
-        TextSize = 11
+        TextSize = 14
     })
     
-    local WatermarkAccent = Create("TextLabel", {
-        Parent = Watermark,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, WatermarkTitle.TextBounds.X, 0, 0),
-        Size = UDim2.new(0, 0, 1, 0),
-        AutomaticSize = Enum.AutomaticSize.X,
-        Font = Fonts.Main,
-        Text = "sense",
-        TextColor3 = Colors.Accent,
-        TextSize = 11
-    })
-    
-    local WatermarkSub = Create("TextLabel", {
-        Parent = Watermark,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, WatermarkTitle.TextBounds.X + WatermarkAccent.TextBounds.X, 0, 0),
-        Size = UDim2.new(0, 0, 1, 0),
-        AutomaticSize = Enum.AutomaticSize.X,
-        Font = Fonts.Main,
-        Text = " | " .. subtitle,
-        TextColor3 = Colors.TextActive,
-        TextSize = 11
-    })
-
     local dragging = false
     local dragStart = nil
     local startPos = nil
@@ -224,7 +204,7 @@ function GameSenseLib:CreateWindow(options)
             local mousePos = Vector2.new(input.Position.X, input.Position.Y)
             local relPos = mousePos - absPos
             
-            if relPos.Y < 50 then
+            if relPos.Y < 60 then
                 dragging = true
                 dragStart = input.Position
                 startPos = MainFrame.Position
@@ -249,7 +229,7 @@ function GameSenseLib:CreateWindow(options)
             )
         end
     end)
-
+    
     UserInputService.InputBegan:Connect(function(input, processed)
         if processed then return end
         if input.KeyCode == toggleKey then
@@ -266,14 +246,14 @@ function GameSenseLib:CreateWindow(options)
         
         local TabButton = Create("TextButton", {
             Name = name,
-            Parent = TabHolder,
+            Parent = TabList,
             BackgroundColor3 = Colors.TabBackground,
             BorderSizePixel = 0,
-            Size = UDim2.new(1, 0, 0, 55),
-            Font = Fonts.Main,
+            Size = UDim2.new(1, 0, 0, 65),
+            Font = Enum.Font.GothamBold,
             Text = name,
             TextColor3 = Colors.TextInactive,
-            TextSize = 16,
+            TextSize = 22,
             AutoButtonColor = false
         })
         
@@ -301,19 +281,23 @@ function GameSenseLib:CreateWindow(options)
             Name = name .. "Content",
             Parent = ContentHolder,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 25, 0, 25),
-            Size = UDim2.new(1, -50, 1, -50),
-            ScrollBarThickness = 4,
+            Position = UDim2.new(0, 15, 0, 15),
+            Size = UDim2.new(1, -30, 1, -30),
+            ScrollBarThickness = 5,
             ScrollBarImageColor3 = Colors.Accent,
             CanvasSize = UDim2.new(0, 0, 0, 0),
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             Visible = false
         })
         
-        Create("UIListLayout", {
+        local ContentLayout = Create("UIListLayout", {
             Parent = TabContent,
             SortOrder = Enum.SortOrder.LayoutOrder,
-            Padding = UDim.new(0, 8)
+            Padding = UDim.new(0, 12),
+            FillDirection = Enum.FillDirection.Horizontal,
+            HorizontalAlignment = Enum.HorizontalAlignment.Left,
+            VerticalAlignment = Enum.VerticalAlignment.Top,
+            Wraps = true
         })
         
         TabButton.MouseEnter:Connect(function()
@@ -345,7 +329,7 @@ function GameSenseLib:CreateWindow(options)
                 Parent = TabContent,
                 BackgroundColor3 = Colors.TabBackground,
                 BorderSizePixel = 0,
-                Size = UDim2.new(0.48, 0, 0, 0),
+                Size = UDim2.new(0, 260, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y
             })
             
@@ -355,37 +339,39 @@ function GameSenseLib:CreateWindow(options)
                 Thickness = 1
             })
             
+            Create("UIPadding", {
+                Parent = SectionFrame,
+                PaddingBottom = UDim.new(0, 15),
+                PaddingLeft = UDim.new(0, 12),
+                PaddingRight = UDim.new(0, 12),
+                PaddingTop = UDim.new(0, 8)
+            })
+            
             local SectionTitle = Create("TextLabel", {
                 Name = "Title",
                 Parent = SectionFrame,
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 10, 0, 0),
-                Size = UDim2.new(0, 0, 0, 20),
-                AutomaticSize = Enum.AutomaticSize.X,
-                Font = Fonts.Main,
+                Size = UDim2.new(1, 0, 0, 24),
+                Font = Enum.Font.GothamBold,
                 Text = sectionName,
                 TextColor3 = Colors.TextActive,
-                TextSize = 10
+                TextSize = 14,
+                TextXAlignment = Enum.TextXAlignment.Left
             })
             
             local SectionContent = Create("Frame", {
                 Name = "Content",
                 Parent = SectionFrame,
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 10, 0, 25),
-                Size = UDim2.new(1, -20, 0, 0),
+                Position = UDim2.new(0, 0, 0, 28),
+                Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y
             })
             
             Create("UIListLayout", {
                 Parent = SectionContent,
                 SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 6)
-            })
-            
-            Create("UIPadding", {
-                Parent = SectionFrame,
-                PaddingBottom = UDim.new(0, 10)
+                Padding = UDim.new(0, 10)
             })
             
             function Section:CreateCheckbox(options)
@@ -400,29 +386,34 @@ function GameSenseLib:CreateWindow(options)
                     Name = text,
                     Parent = SectionContent,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 15)
+                    Size = UDim2.new(1, 0, 0, 22)
                 })
                 
                 local CheckboxIndicator = Create("Frame", {
                     Name = "Indicator",
                     Parent = CheckboxFrame,
                     BackgroundColor3 = default and Colors.CheckboxActive or Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Position = UDim2.new(0, 0, 0.5, -5),
-                    Size = UDim2.new(0, 9, 0, 9)
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 0, 0.5, -7),
+                    Size = UDim2.new(0, 14, 0, 14)
+                })
+                
+                Create("UIStroke", {
+                    Parent = CheckboxIndicator,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
                 })
                 
                 local CheckboxLabel = Create("TextLabel", {
                     Name = "Label",
                     Parent = CheckboxFrame,
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 17, 0, 0),
-                    Size = UDim2.new(1, -17, 1, 0),
-                    Font = Fonts.Main,
+                    Position = UDim2.new(0, 22, 0, 0),
+                    Size = UDim2.new(1, -22, 1, 0),
+                    Font = Enum.Font.Gotham,
                     Text = text,
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
                 
@@ -469,18 +460,18 @@ function GameSenseLib:CreateWindow(options)
                     Name = text,
                     Parent = SectionContent,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 30)
+                    Size = UDim2.new(1, 0, 0, 40)
                 })
                 
                 local SliderLabel = Create("TextLabel", {
                     Name = "Label",
                     Parent = SliderFrame,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 12),
-                    Font = Fonts.Main,
+                    Size = UDim2.new(0.7, 0, 0, 18),
+                    Font = Enum.Font.Gotham,
                     Text = text,
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
                 
@@ -488,12 +479,12 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Value",
                     Parent = SliderFrame,
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -40, 0, 0),
-                    Size = UDim2.new(0, 40, 0, 12),
-                    Font = Fonts.Small,
+                    Position = UDim2.new(0.7, 0, 0, 0),
+                    Size = UDim2.new(0.3, 0, 0, 18),
+                    Font = Enum.Font.Code,
                     Text = tostring(default) .. suffix,
                     TextColor3 = Colors.TextInactive,
-                    TextSize = 8,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Right
                 })
                 
@@ -501,10 +492,15 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Background",
                     Parent = SliderFrame,
                     BackgroundColor3 = Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Position = UDim2.new(0, 0, 0, 16),
-                    Size = UDim2.new(1, 0, 0, 8)
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 0, 0, 22),
+                    Size = UDim2.new(1, 0, 0, 14)
+                })
+                
+                Create("UIStroke", {
+                    Parent = SliderBg,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
                 })
                 
                 local SliderFill = Create("Frame", {
@@ -556,8 +552,6 @@ function GameSenseLib:CreateWindow(options)
                     callback(value)
                 end
                 
-                if default ~= min then callback(default) end
-                
                 table.insert(Section.Elements, Slider)
                 return Slider
             end
@@ -575,7 +569,7 @@ function GameSenseLib:CreateWindow(options)
                     Name = text,
                     Parent = SectionContent,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 35),
+                    Size = UDim2.new(1, 0, 0, 50),
                     ClipsDescendants = false,
                     ZIndex = 5
                 })
@@ -584,11 +578,11 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Label",
                     Parent = DropdownFrame,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 12),
-                    Font = Fonts.Main,
+                    Size = UDim2.new(1, 0, 0, 18),
+                    Font = Enum.Font.Gotham,
                     Text = text,
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     ZIndex = 5
                 })
@@ -597,29 +591,34 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Button",
                     Parent = DropdownFrame,
                     BackgroundColor3 = Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Position = UDim2.new(0, 0, 0, 14),
-                    Size = UDim2.new(1, 0, 0, 18),
-                    Font = Fonts.Small,
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 0, 0, 20),
+                    Size = UDim2.new(1, 0, 0, 28),
+                    Font = Enum.Font.Code,
                     Text = "  " .. (default or "Select..."),
                     TextColor3 = Colors.TextActive,
-                    TextSize = 8,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     AutoButtonColor = false,
                     ZIndex = 5
+                })
+                
+                Create("UIStroke", {
+                    Parent = DropdownButton,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
                 })
                 
                 local DropdownArrow = Create("TextLabel", {
                     Name = "Arrow",
                     Parent = DropdownButton,
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -15, 0, 0),
-                    Size = UDim2.new(0, 15, 1, 0),
-                    Font = Fonts.Small,
+                    Position = UDim2.new(1, -25, 0, 0),
+                    Size = UDim2.new(0, 20, 1, 0),
+                    Font = Enum.Font.GothamBold,
                     Text = "v",
                     TextColor3 = Colors.TextInactive,
-                    TextSize = 8,
+                    TextSize = 12,
                     ZIndex = 5
                 })
                 
@@ -627,13 +626,18 @@ function GameSenseLib:CreateWindow(options)
                     Name = "List",
                     Parent = DropdownButton,
                     BackgroundColor3 = Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Position = UDim2.new(0, 0, 1, 0),
-                    Size = UDim2.new(1, 0, 0, #list * 18),
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 0, 1, 2),
+                    Size = UDim2.new(1, 0, 0, #list * 26),
                     Visible = false,
                     ZIndex = 10,
                     ClipsDescendants = true
+                })
+                
+                Create("UIStroke", {
+                    Parent = DropdownList,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
                 })
                 
                 Create("UIListLayout", {
@@ -641,18 +645,18 @@ function GameSenseLib:CreateWindow(options)
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
                 
-                for i, option in ipairs(list) do
+                local function CreateOption(option)
                     local OptionButton = Create("TextButton", {
                         Name = option,
                         Parent = DropdownList,
                         BackgroundColor3 = Colors.CheckboxBg,
-                        BackgroundTransparency = 0.5,
+                        BackgroundTransparency = 0.3,
                         BorderSizePixel = 0,
-                        Size = UDim2.new(1, 0, 0, 18),
-                        Font = Fonts.Small,
+                        Size = UDim2.new(1, 0, 0, 26),
+                        Font = Enum.Font.Code,
                         Text = "  " .. option,
                         TextColor3 = Colors.TextActive,
-                        TextSize = 8,
+                        TextSize = 12,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         ZIndex = 11
                     })
@@ -662,7 +666,7 @@ function GameSenseLib:CreateWindow(options)
                     end)
                     
                     OptionButton.MouseLeave:Connect(function()
-                        OptionButton.BackgroundTransparency = 0.5
+                        OptionButton.BackgroundTransparency = 0.3
                     end)
                     
                     OptionButton.MouseButton1Click:Connect(function()
@@ -673,6 +677,10 @@ function GameSenseLib:CreateWindow(options)
                         DropdownArrow.Text = "v"
                         callback(option)
                     end)
+                end
+                
+                for i, option in ipairs(list) do
+                    CreateOption(option)
                 end
                 
                 DropdownButton.MouseButton1Click:Connect(function()
@@ -695,39 +703,10 @@ function GameSenseLib:CreateWindow(options)
                     end
                     
                     list = newOptions
-                    DropdownList.Size = UDim2.new(1, 0, 0, #list * 18)
+                    DropdownList.Size = UDim2.new(1, 0, 0, #list * 26)
                     
                     for _, option in ipairs(list) do
-                        local OptionButton = Create("TextButton", {
-                            Name = option,
-                            Parent = DropdownList,
-                            BackgroundColor3 = Colors.CheckboxBg,
-                            BackgroundTransparency = 0.5,
-                            BorderSizePixel = 0,
-                            Size = UDim2.new(1, 0, 0, 18),
-                            Font = Fonts.Small,
-                            Text = "  " .. option,
-                            TextColor3 = Colors.TextActive,
-                            TextSize = 8,
-                            TextXAlignment = Enum.TextXAlignment.Left,
-                            ZIndex = 11
-                        })
-                        
-                        OptionButton.MouseEnter:Connect(function()
-                            OptionButton.BackgroundTransparency = 0
-                        end)
-                        
-                        OptionButton.MouseLeave:Connect(function()
-                            OptionButton.BackgroundTransparency = 0.5
-                        end)
-                        
-                        OptionButton.MouseButton1Click:Connect(function()
-                            Dropdown.Value = option
-                            DropdownButton.Text = "  " .. option
-                            Dropdown.Open = false
-                            DropdownList.Visible = false
-                            callback(option)
-                        end)
+                        CreateOption(option)
                     end
                     
                     if newDefault then
@@ -752,14 +731,19 @@ function GameSenseLib:CreateWindow(options)
                     Name = text,
                     Parent = SectionContent,
                     BackgroundColor3 = Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Size = UDim2.new(1, 0, 0, 20),
-                    Font = Fonts.Main,
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(1, 0, 0, 30),
+                    Font = Enum.Font.Gotham,
                     Text = text,
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     AutoButtonColor = false
+                })
+                
+                Create("UIStroke", {
+                    Parent = ButtonFrame,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
                 })
                 
                 ButtonFrame.MouseEnter:Connect(function()
@@ -783,11 +767,11 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Label",
                     Parent = SectionContent,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 15),
-                    Font = Fonts.Main,
+                    Size = UDim2.new(1, 0, 0, 20),
+                    Font = Enum.Font.Gotham,
                     Text = text or "Label",
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
                 
@@ -811,18 +795,18 @@ function GameSenseLib:CreateWindow(options)
                     Name = text,
                     Parent = SectionContent,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 32)
+                    Size = UDim2.new(1, 0, 0, 48)
                 })
                 
                 local TextboxLabel = Create("TextLabel", {
                     Name = "Label",
                     Parent = TextboxFrame,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 12),
-                    Font = Fonts.Main,
+                    Size = UDim2.new(1, 0, 0, 18),
+                    Font = Enum.Font.Gotham,
                     Text = text,
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
                 
@@ -830,17 +814,27 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Input",
                     Parent = TextboxFrame,
                     BackgroundColor3 = Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Position = UDim2.new(0, 0, 0, 14),
-                    Size = UDim2.new(1, 0, 0, 18),
-                    Font = Fonts.Small,
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 0, 0, 20),
+                    Size = UDim2.new(1, 0, 0, 26),
+                    Font = Enum.Font.Code,
                     PlaceholderText = placeholder,
                     PlaceholderColor3 = Colors.TextInactive,
                     Text = "",
                     TextColor3 = Colors.TextActive,
-                    TextSize = 8,
+                    TextSize = 12,
                     ClearTextOnFocus = false
+                })
+                
+                Create("UIStroke", {
+                    Parent = TextboxInput,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
+                })
+                
+                Create("UIPadding", {
+                    Parent = TextboxInput,
+                    PaddingLeft = UDim.new(0, 8)
                 })
                 
                 TextboxInput.FocusLost:Connect(function(enterPressed)
@@ -869,18 +863,18 @@ function GameSenseLib:CreateWindow(options)
                     Name = text,
                     Parent = SectionContent,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 18)
+                    Size = UDim2.new(1, 0, 0, 26)
                 })
                 
                 local KeybindLabel = Create("TextLabel", {
                     Name = "Label",
                     Parent = KeybindFrame,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(0.6, 0, 1, 0),
-                    Font = Fonts.Main,
+                    Size = UDim2.new(0.55, 0, 1, 0),
+                    Font = Enum.Font.Gotham,
                     Text = text,
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
                 
@@ -888,15 +882,20 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Button",
                     Parent = KeybindFrame,
                     BackgroundColor3 = Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Position = UDim2.new(0.6, 5, 0, 1),
-                    Size = UDim2.new(0.4, -5, 0, 16),
-                    Font = Fonts.Small,
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0.55, 5, 0, 0),
+                    Size = UDim2.new(0.45, -5, 1, 0),
+                    Font = Enum.Font.Code,
                     Text = default.Name ~= "Unknown" and default.Name or "None",
                     TextColor3 = Colors.TextActive,
-                    TextSize = 8,
+                    TextSize = 12,
                     AutoButtonColor = false
+                })
+                
+                Create("UIStroke", {
+                    Parent = KeybindButton,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
                 })
                 
                 KeybindButton.MouseButton1Click:Connect(function()
@@ -937,7 +936,7 @@ function GameSenseLib:CreateWindow(options)
                     Name = text,
                     Parent = SectionContent,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 18)
+                    Size = UDim2.new(1, 0, 0, 26)
                 })
                 
                 local ToggleLabel = Create("TextLabel", {
@@ -945,10 +944,10 @@ function GameSenseLib:CreateWindow(options)
                     Parent = ToggleFrame,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0.7, 0, 1, 0),
-                    Font = Fonts.Main,
+                    Font = Enum.Font.Gotham,
                     Text = text,
                     TextColor3 = Colors.TextActive,
-                    TextSize = 9,
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
                 
@@ -956,10 +955,20 @@ function GameSenseLib:CreateWindow(options)
                     Name = "Background",
                     Parent = ToggleFrame,
                     BackgroundColor3 = default and Colors.CheckboxActive or Colors.CheckboxBg,
-                    BorderColor3 = Color3.new(0, 0, 0),
-                    BorderSizePixel = 1,
-                    Position = UDim2.new(1, -30, 0.5, -6),
-                    Size = UDim2.new(0, 30, 0, 12)
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(1, -45, 0.5, -9),
+                    Size = UDim2.new(0, 45, 0, 18)
+                })
+                
+                Create("UIStroke", {
+                    Parent = ToggleBg,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
+                })
+                
+                Create("UICorner", {
+                    Parent = ToggleBg,
+                    CornerRadius = UDim.new(0, 9)
                 })
                 
                 local ToggleCircle = Create("Frame", {
@@ -967,8 +976,8 @@ function GameSenseLib:CreateWindow(options)
                     Parent = ToggleBg,
                     BackgroundColor3 = Colors.TextActive,
                     BorderSizePixel = 0,
-                    Position = default and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4),
-                    Size = UDim2.new(0, 8, 0, 8)
+                    Position = default and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7),
+                    Size = UDim2.new(0, 14, 0, 14)
                 })
                 
                 Create("UICorner", {
@@ -990,7 +999,7 @@ function GameSenseLib:CreateWindow(options)
                         BackgroundColor3 = Toggle.Value and Colors.CheckboxActive or Colors.CheckboxBg
                     })
                     Tween(ToggleCircle, {
-                        Position = Toggle.Value and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4)
+                        Position = Toggle.Value and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
                     })
                     callback(Toggle.Value)
                 end)
@@ -998,7 +1007,7 @@ function GameSenseLib:CreateWindow(options)
                 function Toggle:Set(value)
                     Toggle.Value = value
                     ToggleBg.BackgroundColor3 = value and Colors.CheckboxActive or Colors.CheckboxBg
-                    ToggleCircle.Position = value and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4)
+                    ToggleCircle.Position = value and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
                     callback(value)
                 end
                 
@@ -1006,6 +1015,206 @@ function GameSenseLib:CreateWindow(options)
                 
                 table.insert(Section.Elements, Toggle)
                 return Toggle
+            end
+            
+            function Section:CreateColorPicker(options)
+                options = options or {}
+                local text = options.Text or "Color"
+                local default = options.Default or Color3.fromRGB(255, 255, 255)
+                local callback = options.Callback or function() end
+                
+                local ColorPicker = {Value = default, Open = false}
+                
+                local ColorFrame = Create("Frame", {
+                    Name = text,
+                    Parent = SectionContent,
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 0, 26),
+                    ZIndex = 5
+                })
+                
+                local ColorLabel = Create("TextLabel", {
+                    Name = "Label",
+                    Parent = ColorFrame,
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(0.7, 0, 1, 0),
+                    Font = Enum.Font.Gotham,
+                    Text = text,
+                    TextColor3 = Colors.TextActive,
+                    TextSize = 13,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    ZIndex = 5
+                })
+                
+                local ColorDisplay = Create("TextButton", {
+                    Name = "Display",
+                    Parent = ColorFrame,
+                    BackgroundColor3 = default,
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(1, -50, 0.5, -10),
+                    Size = UDim2.new(0, 50, 0, 20),
+                    Text = "",
+                    AutoButtonColor = false,
+                    ZIndex = 5
+                })
+                
+                Create("UIStroke", {
+                    Parent = ColorDisplay,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
+                })
+                
+                local ColorPanel = Create("Frame", {
+                    Name = "Panel",
+                    Parent = ColorDisplay,
+                    BackgroundColor3 = Colors.TabBackground,
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 0, 1, 5),
+                    Size = UDim2.new(0, 150, 0, 120),
+                    Visible = false,
+                    ZIndex = 20
+                })
+                
+                Create("UIStroke", {
+                    Parent = ColorPanel,
+                    Color = Color3.fromRGB(0, 0, 0),
+                    Thickness = 1
+                })
+                
+                local hue, sat, val = default:ToHSV()
+                
+                local HueSlider = Create("Frame", {
+                    Name = "Hue",
+                    Parent = ColorPanel,
+                    BackgroundColor3 = Color3.new(1, 1, 1),
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 10, 0, 10),
+                    Size = UDim2.new(1, -20, 0, 15),
+                    ZIndex = 21
+                })
+                
+                Create("UIGradient", {
+                    Parent = HueSlider,
+                    Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
+                        ColorSequenceKeypoint.new(0.167, Color3.fromHSV(0.167, 1, 1)),
+                        ColorSequenceKeypoint.new(0.333, Color3.fromHSV(0.333, 1, 1)),
+                        ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
+                        ColorSequenceKeypoint.new(0.667, Color3.fromHSV(0.667, 1, 1)),
+                        ColorSequenceKeypoint.new(0.833, Color3.fromHSV(0.833, 1, 1)),
+                        ColorSequenceKeypoint.new(1, Color3.fromHSV(1, 1, 1))
+                    })
+                })
+                
+                local SatValBox = Create("Frame", {
+                    Name = "SatVal",
+                    Parent = ColorPanel,
+                    BackgroundColor3 = Color3.fromHSV(hue, 1, 1),
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, 10, 0, 35),
+                    Size = UDim2.new(1, -20, 0, 75),
+                    ZIndex = 21
+                })
+                
+                Create("UIGradient", {
+                    Parent = SatValBox,
+                    Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(1, 1, 1)),
+                    Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0, 0),
+                        NumberSequenceKeypoint.new(1, 1)
+                    })
+                })
+                
+                local SatValOverlay = Create("Frame", {
+                    Name = "Overlay",
+                    Parent = SatValBox,
+                    BackgroundColor3 = Color3.new(0, 0, 0),
+                    BackgroundTransparency = 0,
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(1, 0, 1, 0),
+                    ZIndex = 22
+                })
+                
+                Create("UIGradient", {
+                    Parent = SatValOverlay,
+                    Color = ColorSequence.new(Color3.new(0, 0, 0), Color3.new(0, 0, 0)),
+                    Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0, 1),
+                        NumberSequenceKeypoint.new(1, 0)
+                    }),
+                    Rotation = 90
+                })
+                
+                ColorDisplay.MouseButton1Click:Connect(function()
+                    ColorPicker.Open = not ColorPicker.Open
+                    ColorPanel.Visible = ColorPicker.Open
+                end)
+                
+                local function UpdateColor()
+                    local color = Color3.fromHSV(hue, sat, val)
+                    ColorPicker.Value = color
+                    ColorDisplay.BackgroundColor3 = color
+                    SatValBox.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    callback(color)
+                end
+                
+                local hueDragging = false
+                local svDragging = false
+                
+                HueSlider.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        hueDragging = true
+                        hue = math.clamp((input.Position.X - HueSlider.AbsolutePosition.X) / HueSlider.AbsoluteSize.X, 0, 1)
+                        UpdateColor()
+                    end
+                end)
+                
+                HueSlider.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        hueDragging = false
+                    end
+                end)
+                
+                SatValBox.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        svDragging = true
+                        sat = math.clamp((input.Position.X - SatValBox.AbsolutePosition.X) / SatValBox.AbsoluteSize.X, 0, 1)
+                        val = 1 - math.clamp((input.Position.Y - SatValBox.AbsolutePosition.Y) / SatValBox.AbsoluteSize.Y, 0, 1)
+                        UpdateColor()
+                    end
+                end)
+                
+                SatValBox.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        svDragging = false
+                    end
+                end)
+                
+                UserInputService.InputChanged:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseMovement then
+                        if hueDragging then
+                            hue = math.clamp((input.Position.X - HueSlider.AbsolutePosition.X) / HueSlider.AbsoluteSize.X, 0, 1)
+                            UpdateColor()
+                        elseif svDragging then
+                            sat = math.clamp((input.Position.X - SatValBox.AbsolutePosition.X) / SatValBox.AbsoluteSize.X, 0, 1)
+                            val = 1 - math.clamp((input.Position.Y - SatValBox.AbsolutePosition.Y) / SatValBox.AbsoluteSize.Y, 0, 1)
+                            UpdateColor()
+                        end
+                    end
+                end)
+                
+                function ColorPicker:Set(color)
+                    ColorPicker.Value = color
+                    hue, sat, val = color:ToHSV()
+                    ColorDisplay.BackgroundColor3 = color
+                    SatValBox.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    callback(color)
+                end
+                
+                callback(default)
+                
+                table.insert(Section.Elements, ColorPicker)
+                return ColorPicker
             end
             
             table.insert(Tab.Elements, Section)
@@ -1041,7 +1250,7 @@ function GameSenseLib:CreateWindow(options)
     function Window:SetWatermark(visible, text)
         Watermark.Visible = visible
         if text then
-            WatermarkTitle.Text = text
+            WatermarkText.Text = text
         end
     end
     
