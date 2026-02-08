@@ -34,9 +34,45 @@ function Library:CreateWindow(title)
         BorderColor3 = Color3.fromRGB(0, 0, 0),
         Position = UDim2.new(0.35, 0, 0.15, 0),
         Size = UDim2.new(0, 577, 0, 619),
-        Active = true,
-        Draggable = true
+        Active = true
     })
+    
+    local dragToggle = nil
+    local dragStart = nil
+    local startPos = nil
+    local dragInput = nil
+    
+    local function updateInput(input)
+        local delta = input.Position - dragStart
+        local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        TweenService:Create(MainFrame, TweenInfo.new(0.15), {Position = position}):Play()
+    end
+    
+    MainFrame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+    
+    MainFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
     
     CreateInstance("UICorner", {
         Parent = MainFrame,
@@ -128,17 +164,47 @@ function Library:CreateWindow(title)
         VerticalAlignment = Enum.VerticalAlignment.Center
     })
     
+    local SubTabBar = CreateInstance("Frame", {
+        Name = "SubTabBar",
+        Parent = MainFrame,
+        BackgroundColor3 = Color3.fromRGB(32, 32, 38),
+        Position = UDim2.new(0, 15, 0, 23),
+        Size = UDim2.new(0, 550, 0, 70),
+        BorderSizePixel = 0,
+        Visible = false
+    })
+    
+    CreateInstance("UICorner", {
+        Parent = SubTabBar,
+        CornerRadius = UDim.new(0, 2)
+    })
+    
+    local SubTabContainer = CreateInstance("Frame", {
+        Parent = SubTabBar,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 35),
+        Size = UDim2.new(1, -40, 0, 30)
+    })
+    
+    local SubTabList = CreateInstance("UIListLayout", {
+        Parent = SubTabContainer,
+        FillDirection = Enum.FillDirection.Horizontal,
+        Padding = UDim.new(0, 50),
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Center
+    })
+    
     local ContentContainer = CreateInstance("Frame", {
         Parent = MainFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 68),
-        Size = UDim2.new(1, 0, 1, -138)
+        Position = UDim2.new(0, 0, 0, 98),
+        Size = UDim2.new(1, 0, 1, -168)
     })
     
     Window.CurrentTab = nil
     Window.Tabs = {}
     
-    function Window:AddTab(tabName)
+    function Window:AddTab(tabName, hasSubTabs)
         local Tab = {}
         
         local TabButton = CreateInstance("TextButton", {
@@ -164,18 +230,26 @@ function Library:CreateWindow(title)
             Visible = false,
             ScrollBarThickness = 4,
             CanvasSize = UDim2.new(0, 0, 0, 0),
-            BorderSizePixel = 0
+            BorderSizePixel = 0,
+            ScrollBarImageColor3 = Color3.fromRGB(224, 159, 93)
         })
         
         local ContentLayout = CreateInstance("UIListLayout", {
             Parent = TabContent,
             Padding = UDim.new(0, 15),
-            HorizontalAlignment = Enum.HorizontalAlignment.Left
+            HorizontalAlignment = Enum.HorizontalAlignment.Left,
+            FillDirection = Enum.FillDirection.Horizontal,
+            VerticalAlignment = Enum.VerticalAlignment.Top,
+            Wraps = true
         })
         
         ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             TabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 20)
         end)
+        
+        Tab.SubTabs = {}
+        Tab.CurrentSubTab = nil
+        Tab.HasSubTabs = hasSubTabs or false
         
         TabButton.MouseButton1Click:Connect(function()
             for _, tab in pairs(Window.Tabs) do
@@ -186,6 +260,23 @@ function Library:CreateWindow(title)
             TabButton.BackgroundTransparency = 0
             TabContent.Visible = true
             Window.CurrentTab = Tab
+            
+            if Tab.HasSubTabs then
+                SubTabBar.Visible = true
+                for name, subTab in pairs(Tab.SubTabs) do
+                    subTab.Container.Parent = SubTabContainer
+                end
+                if Tab.CurrentSubTab then
+                    Tab.CurrentSubTab.Content.Visible = true
+                end
+            else
+                SubTabBar.Visible = false
+                for _, child in pairs(SubTabContainer:GetChildren()) do
+                    if child:IsA("TextLabel") then
+                        child.Parent = nil
+                    end
+                end
+            end
         end)
         
         if not Window.CurrentTab then
@@ -198,15 +289,85 @@ function Library:CreateWindow(title)
         Tab.Content = TabContent
         Tab.Elements = {}
         
-        function Tab:AddSection(sectionName)
+        function Tab:AddSubTab(subTabName)
+            local SubTab = {}
+            
+            local SubTabLabel = CreateInstance("TextLabel", {
+                Parent = SubTabContainer,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(0, 80, 0, 20),
+                Font = Enum.Font.Gotham,
+                Text = subTabName:upper(),
+                TextColor3 = Color3.fromRGB(255, 255, 255),
+                TextSize = 12,
+                TextTransparency = 0.5
+            })
+            
+            local SubTabButton = CreateInstance("TextButton", {
+                Parent = SubTabLabel,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 1, 0),
+                Text = "",
+                ZIndex = 2
+            })
+            
+            local SubTabContent = CreateInstance("Frame", {
+                Parent = TabContent,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 1, 0),
+                Visible = false
+            })
+            
+            local SubContentLayout = CreateInstance("UIListLayout", {
+                Parent = SubTabContent,
+                Padding = UDim.new(0, 15),
+                HorizontalAlignment = Enum.HorizontalAlignment.Left,
+                FillDirection = Enum.FillDirection.Horizontal,
+                VerticalAlignment = Enum.VerticalAlignment.Top,
+                Wraps = true
+            })
+            
+            SubTabButton.MouseButton1Click:Connect(function()
+                for name, st in pairs(Tab.SubTabs) do
+                    st.Label.TextTransparency = 0.5
+                    st.Content.Visible = false
+                end
+                
+                SubTabLabel.TextTransparency = 0
+                SubTabContent.Visible = true
+                Tab.CurrentSubTab = SubTab
+            end)
+            
+            if not Tab.CurrentSubTab then
+                SubTabLabel.TextTransparency = 0
+                SubTabContent.Visible = true
+                Tab.CurrentSubTab = SubTab
+            end
+            
+            SubTab.Label = SubTabLabel
+            SubTab.Button = SubTabButton
+            SubTab.Content = SubTabContent
+            SubTab.Container = SubTabLabel
+            
+            Tab.SubTabs[subTabName] = SubTab
+            
+            function SubTab:AddSection(sectionName)
+                return Tab:AddSection(sectionName, SubTabContent)
+            end
+            
+            return SubTab
+        end
+        
+        function Tab:AddSection(sectionName, parentContainer)
             local Section = {}
             
+            local targetParent = parentContainer or TabContent
+            
             local SectionFrame = CreateInstance("Frame", {
-                Parent = TabContent,
+                Parent = targetParent,
                 BackgroundColor3 = Color3.fromRGB(32, 32, 38),
                 BorderColor3 = Color3.fromRGB(58, 58, 58),
-                Size = UDim2.new(0, 215, 0, 150),
-                Position = UDim2.new(0, 27, 0, 0)
+                Size = UDim2.new(0, 250, 0, 200)
             })
             
             CreateInstance("UICorner", {
@@ -241,8 +402,16 @@ function Library:CreateWindow(title)
             
             local ElementLayout = CreateInstance("UIListLayout", {
                 Parent = ElementContainer,
-                Padding = UDim.new(0, 7)
+                Padding = UDim.new(0, 7),
+                FillDirection = Enum.FillDirection.Vertical,
+                HorizontalAlignment = Enum.HorizontalAlignment.Left
             })
+            
+            local elementCount = 0
+            
+            ElementLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                SectionFrame.Size = UDim2.new(0, 250, 0, math.max(200, ElementLayout.AbsoluteContentSize.Y + 30))
+            end)
             
             function Section:AddToggle(name, default, callback)
                 local Toggle = {}
@@ -382,6 +551,7 @@ function Library:CreateWindow(title)
                 SliderBG.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         dragging = true
+                        dragToggle = false
                         UpdateSlider(input)
                     end
                 end)
@@ -393,12 +563,13 @@ function Library:CreateWindow(title)
                 end)
                 
                 UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
                         dragging = false
                     end
                 end)
                 
-                UpdateSlider({Position = Vector3.new(SliderBG.AbsolutePosition.X + (SliderBG.AbsoluteSize.X * ((default or min) - min) / (max - min)), 0, 0)})
+                local initialPos = ((default or min) - min) / (max - min)
+                SliderFill.Size = UDim2.new(initialPos, 0, 1, 0)
                 
                 return Slider
             end
