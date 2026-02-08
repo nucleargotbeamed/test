@@ -184,14 +184,14 @@ function Library:CreateWindow(title)
     local SubTabContainer = CreateInstance("Frame", {
         Parent = SubTabBar,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 20, 0, 35),
-        Size = UDim2.new(1, -40, 0, 30)
+        Position = UDim2.new(0, 35, 0, 20),
+        Size = UDim2.new(1, -70, 0, 30)
     })
     
     local SubTabList = CreateInstance("UIListLayout", {
         Parent = SubTabContainer,
         FillDirection = Enum.FillDirection.Horizontal,
-        Padding = UDim.new(0, 50),
+        Padding = UDim.new(0, 85),
         HorizontalAlignment = Enum.HorizontalAlignment.Left,
         VerticalAlignment = Enum.VerticalAlignment.Center
     })
@@ -233,16 +233,17 @@ function Library:CreateWindow(title)
             ScrollBarThickness = 4,
             CanvasSize = UDim2.new(0, 0, 0, 0),
             BorderSizePixel = 0,
-            ScrollBarImageColor3 = Color3.fromRGB(224, 159, 93)
+            ScrollBarImageColor3 = Color3.fromRGB(224, 159, 93),
+            AutomaticCanvasSize = Enum.AutomaticSize.Y
         })
         
-        local ContentLayout = CreateInstance("UIListLayout", {
+        local ContentLayout = CreateInstance("UIGridLayout", {
             Parent = TabContent,
-            Padding = UDim.new(0, 15),
+            CellSize = UDim2.new(0, 250, 0, 200),
+            CellPadding = UDim2.new(0, 15, 0, 15),
             HorizontalAlignment = Enum.HorizontalAlignment.Left,
-            FillDirection = Enum.FillDirection.Horizontal,
             VerticalAlignment = Enum.VerticalAlignment.Top,
-            Wraps = true
+            SortOrder = Enum.SortOrder.LayoutOrder
         })
         
         CreateInstance("UIPadding", {
@@ -251,10 +252,6 @@ function Library:CreateWindow(title)
             PaddingTop = UDim.new(0, 15),
             PaddingRight = UDim.new(0, 25)
         })
-        
-        ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            TabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 20)
-        end)
         
         Tab.SubTabs = {}
         Tab.CurrentSubTab = nil
@@ -304,7 +301,7 @@ function Library:CreateWindow(title)
             local SubTabLabel = CreateInstance("TextLabel", {
                 Parent = SubTabContainer,
                 BackgroundTransparency = 1,
-                Size = UDim2.new(0, 80, 0, 20),
+                Size = UDim2.new(0, 60, 0, 20),
                 Font = Enum.Font.Gotham,
                 Text = subTabName:upper(),
                 TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -327,13 +324,13 @@ function Library:CreateWindow(title)
                 Visible = false
             })
             
-            local SubContentLayout = CreateInstance("UIListLayout", {
+            local SubContentLayout = CreateInstance("UIGridLayout", {
                 Parent = SubTabContent,
-                Padding = UDim.new(0, 15),
+                CellSize = UDim2.new(0, 250, 0, 200),
+                CellPadding = UDim2.new(0, 15, 0, 15),
                 HorizontalAlignment = Enum.HorizontalAlignment.Left,
-                FillDirection = Enum.FillDirection.Horizontal,
                 VerticalAlignment = Enum.VerticalAlignment.Top,
-                Wraps = true
+                SortOrder = Enum.SortOrder.LayoutOrder
             })
             
             CreateInstance("UIPadding", {
@@ -431,9 +428,24 @@ function Library:CreateWindow(title)
             })
             
             local elementCount = 0
+            local updating = false
             
             ElementLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                SectionFrame.Size = UDim2.new(0, 250, 0, math.max(200, ElementLayout.AbsoluteContentSize.Y + 42))
+                if not updating then
+                    updating = true
+                    local newHeight = math.max(200, ElementLayout.AbsoluteContentSize.Y + 42)
+                    SectionFrame.Size = UDim2.new(0, 250, 0, newHeight)
+                    
+                    local parent = SectionFrame.Parent
+                    if parent then
+                        local layout = parent:FindFirstChildOfClass("UIGridLayout")
+                        if layout then
+                            layout.CellSize = UDim2.new(0, 250, 0, 200)
+                        end
+                    end
+                    task.wait()
+                    updating = false
+                end
             end)
             
             function Section:AddToggle(name, default, callback)
