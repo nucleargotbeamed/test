@@ -88,7 +88,7 @@ function Library:CreateWindow(title)
     Watermark.Text = "game"
     Watermark.RichText = true
     Watermark.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Watermark.Font = Enum.Font.Verdana
+    Watermark.Font = Enum.Font.SourceSans
     Watermark.TextSize = 10
     Watermark.Visible = false
     Watermark.Parent = ScreenGui
